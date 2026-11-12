@@ -1,5 +1,7 @@
 # Elektrik Ödevi — Seri-Paralel DC Devre Çözümleri
 
+🌐 **Canlı Web Sitesi (Neubrutalism & Bento Grid):** [https://emirhanyazici.github.io/devre-odevi/](https://emirhanyazici.github.io/devre-odevi/)
+
 Her seviye ayrı bir dosyada, hiçbir ara işlem atlanmadan çözülmüştür. Her seviye 2 puan.
 
 | Seviye | Direnç sayısı | Kaynak (V) | R_eş (kΩ) | I_toplam (mA) | Dosya |
