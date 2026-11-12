@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>⚡ Seri-Paralel DC Devre Çözümleri</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════
+   NEUBRUTALISM CIRCUIT THEME
+   Bento Grid • Bold Borders • Vivid Colors • No AI vibes
+   ═══════════════════════════════════════════════════════ */
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#f0ece2;
+  --ink:#1a1a2e;
+  --ink2:#4a4a68;
+  --card:#fffdf7;
+  --border:#1a1a2e;
+  --shadow:4px 4px 0 #1a1a2e;
+  --shadow-lg:6px 6px 0 #1a1a2e;
+  --shadow-sm:3px 3px 0 #1a1a2e;
+
+  /* Circuit-themed accent colors */
+  --volt:#ff6b35;      /* Voltage - electric orange */
+  --amp:#00b4d8;       /* Current - electric blue */
+  --resist:#7b2d8e;    /* Resistance - deep purple */
+  --power:#2dc653;     /* Power - neon green */
+  --warn:#ffd60a;      /* Warning - electric yellow */
+  --hero:#e63946;      /* Hero accent - circuit red */
+  --accent:#3a86ff;    /* Primary accent */
+
+  --radius:0;
+  --border-w:3px;
+  --font-body:'Space Grotesk', system-ui, sans-serif;
+  --font-mono:'Space Mono', 'Fira Code', monospace;
+}
+
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font:16px/1.7 var(--font-body);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+/* ══════ ANIMATED BACKGROUND GRID ══════ */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(26,26,46,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26,26,46,.04) 1px, transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ══════ HEADER ══════ */
+header.top{
+  background:var(--ink);
+  color:#fff;
+  padding:0;
+  margin-bottom:0;
+  position:relative;
+  overflow:hidden;
+  border-bottom:var(--border-w) solid var(--ink);
+}
+
+.hero-grid{
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:center;
+  gap:30px;
+  padding:50px 40px 45px;
+  max-width:1400px;
+  margin:0 auto;
+}
+
+.hero-text h1{
+  font-family:var(--font-body);
+  font-size:clamp(28px, 5vw, 52px);
+  font-weight:700;
+  letter-spacing:-1.5px;
+  line-height:1.1;
+  margin-bottom:12px;
+}
+
+/* Logo replaces the zap emoji */
+
+.hero-text p{
+  font-size:clamp(14px, 2vw, 18px);
+  opacity:.75;
+  font-family:var(--font-mono);
+  font-size:14px;
+}
+
+.hero-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  background:var(--volt);
+  color:#fff;
+  font-family:var(--font-mono);
+  font-size:12px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:1.5px;
+  padding:8px 16px;
+  border:2px solid #fff;
+  margin-bottom:16px;
+}
+
+.hero-stats{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.hero-stat{
+  background:rgba(255,255,255,.08);
+  border:2px solid rgba(255,255,255,.15);
+  padding:14px 20px;
+  text-align:center;
+  min-width:90px;
+  transition:all .2s;
+}
+.hero-stat:hover{
+  background:var(--volt);
+  border-color:var(--volt);
+  transform:translate(-2px,-2px);
+}
+.hero-stat .num{
+  display:block;
+  font-family:var(--font-mono);
+  font-size:28px;
+  font-weight:700;
+  line-height:1;
+}
+.hero-stat .lbl{
+  display:block;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  opacity:.7;
+  margin-top:4px;
+}
+
+/* ══════ LOGO ══════ */
+.logo-wrap{
+  width:180px;height:180px;
+  border-radius:50%;
+  border:4px solid #fff;
+  box-shadow:0 0 0 4px var(--volt), 0 0 30px rgba(255,107,53,.4);
+  overflow:hidden;
+  flex-shrink:0;
+  animation:logoPulse 3s ease-in-out infinite;
+}
+.logo-img{
+  width:100%;height:100%;
+  object-fit:cover;
+  object-position:center 15%;
+  display:block;
+}
+@keyframes logoPulse{
+  0%,100%{box-shadow:0 0 0 4px var(--volt), 0 0 20px rgba(255,107,53,.3)}
+  50%{box-shadow:0 0 0 6px var(--amp), 0 0 40px rgba(0,180,216,.4)}
+}
+
+/* Circuit line animation in header */
+.circuit-line{
+  position:absolute;
+  bottom:0;left:0;right:0;
+  height:4px;
+  background:linear-gradient(90deg, var(--volt), var(--amp), var(--power), var(--volt));
+  background-size:200% 100%;
+  animation:circuitFlow 3s linear infinite;
+}
+@keyframes circuitFlow{
+  0%{background-position:0% 0%}
+  100%{background-position:200% 0%}
+}
+
+/* ══════ STICKY NAV ══════ */
+nav{
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:var(--card);
+  border-bottom:var(--border-w) solid var(--border);
+  backdrop-filter:blur(10px);
+}
+nav .wrap{
+  display:flex;
+  gap:4px;
+  flex-wrap:wrap;
+  padding:10px 20px;
+  max-width:1400px;
+  margin:0 auto;
+  overflow-x:auto;
+}
+nav a{
+  display:inline-block;
+  padding:8px 14px;
+  text-decoration:none;
+  color:var(--ink);
+  font-size:13px;
+  font-weight:700;
+  font-family:var(--font-mono);
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  border:2px solid transparent;
+  transition:all .15s;
+  white-space:nowrap;
+  position:relative;
+}
+nav a:hover{
+  background:var(--warn);
+  border-color:var(--border);
+  box-shadow:var(--shadow-sm);
+  transform:translate(-2px,-2px);
+}
+nav a.active{
+  background:var(--volt);
+  color:#fff;
+  border-color:var(--border);
+}
+
+/* ══════ MAIN WRAP ══════ */
+.wrap{
+  max-width:1400px;
+  margin:0 auto;
+  padding:30px 20px 80px;
+  position:relative;
+  z-index:1;
+}
+
+/* ══════ BENTO OVERVIEW GRID ══════ */
+.bento-overview{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:16px;
+  margin-bottom:40px;
+}
+
+.bento-card{
+  background:var(--card);
+  border:var(--border-w) solid var(--border);
+  box-shadow:var(--shadow);
+  padding:20px 22px;
+  transition:all .2s ease;
+  position:relative;
+  overflow:hidden;
+}
+.bento-card:hover{
+  transform:translate(-3px,-3px);
+  box-shadow:8px 8px 0 var(--border);
+}
+
+.bento-card.span-full{
+  grid-column:1/-1;
+}
+.bento-card.span-2{
+  grid-column:span 2;
+}
+.bento-card.span-3{
+  grid-column:span 3;
+}
+.bento-card.color-volt{border-left:6px solid var(--volt)}
+.bento-card.color-amp{border-left:6px solid var(--amp)}
+.bento-card.color-resist{border-left:6px solid var(--resist)}
+.bento-card.color-power{border-left:6px solid var(--power)}
+
+@media(max-width:900px){
+  .bento-overview{grid-template-columns:1fr 1fr}
+  .bento-card.span-3{grid-column:span 2}
+}
+@media(max-width:600px){
+  .bento-overview{grid-template-columns:1fr}
+  .bento-card.span-2,.bento-card.span-3{grid-column:span 1}
+}
+
+/* ══════ SECTIONS ══════ */
+section{
+  background:var(--card);
+  border:var(--border-w) solid var(--border);
+  box-shadow:var(--shadow-lg);
+  padding:0;
+  margin-bottom:36px;
+  position:relative;
+  overflow:hidden;
+  animation:fadeSlideUp .6s ease both;
+}
+
+@keyframes fadeSlideUp{
+  from{opacity:0;transform:translateY(30px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+section:nth-child(1){animation-delay:.1s}
+section:nth-child(2){animation-delay:.15s}
+section:nth-child(3){animation-delay:.2s}
+section:nth-child(4){animation-delay:.25s}
+section:nth-child(5){animation-delay:.3s}
+section:nth-child(6){animation-delay:.35s}
+section:nth-child(7){animation-delay:.4s}
+section:nth-child(8){animation-delay:.45s}
+section:nth-child(9){animation-delay:.5s}
+
+.section-inner{
+  padding:30px 32px 36px;
+}
+
+/* ══════ SECTION HEADER ══════ */
+.sh{
+  border-bottom:var(--border-w) solid var(--border);
+  padding:24px 32px;
+  background:var(--bg);
+  margin-bottom:0;
+}
+
+.badge{
+  display:inline-block;
+  font-family:var(--font-mono);
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  padding:6px 14px;
+  margin-bottom:12px;
+  border:2px solid var(--border);
+  box-shadow:var(--shadow-sm);
+  transition:all .2s;
+}
+
+/* Color rotation for badges */
+section:nth-child(odd) .badge{background:var(--volt);color:#fff}
+section:nth-child(even) .badge{background:var(--amp);color:#fff}
+section:nth-child(3n) .badge{background:var(--resist);color:#fff}
+section:nth-child(4n) .badge{background:var(--power);color:#fff}
+#s1 .badge{background:var(--volt);color:#fff}
+#s2 .badge{background:var(--amp);color:#fff}
+#s3 .badge{background:var(--resist);color:#fff}
+#s4 .badge{background:var(--power);color:#fff}
+#s5 .badge{background:var(--hero);color:#fff}
+#s6 .badge{background:var(--accent);color:#fff}
+#s7 .badge{background:var(--warn);color:var(--ink)}
+#s8 .badge{background:var(--ink);color:#fff}
+
+.sh h2{
+  margin:0 0 10px;
+  font-size:clamp(20px, 3vw, 28px);
+  font-weight:700;
+  letter-spacing:-0.5px;
+}
+
+.topo{
+  margin:0;
+  color:var(--ink2);
+  font-size:14.5px;
+  line-height:1.6;
+}
+
+/* ══════ H3 STEP TITLES ══════ */
+h3{
+  font-size:17px;
+  font-weight:700;
+  margin:32px 0 14px;
+  padding:10px 16px;
+  background:var(--ink);
+  color:#fff;
+  display:inline-block;
+  border:none;
+  position:relative;
+  font-family:var(--font-mono);
+  letter-spacing:.5px;
+}
+h3::after{
+  content:'';
+  position:absolute;
+  right:-4px;bottom:-4px;
+  width:100%;height:100%;
+  background:var(--volt);
+  z-index:-1;
+}
+
+/* ══════ CIRCUIT SCHEMATICS ══════ */
+figure{margin:0 0 20px}
+figcaption{
+  font-family:var(--font-mono);
+  font-size:12px;
+  font-weight:700;
+  color:var(--ink2);
+  text-transform:uppercase;
+  letter-spacing:1px;
+  margin-bottom:10px;
+  padding:8px 12px;
+  background:var(--warn);
+  border:2px solid var(--border);
+  display:inline-block;
+  box-shadow:var(--shadow-sm);
+}
+
+.sema{
+  background:#fff;
+  border:var(--border-w) solid var(--border);
+  padding:16px 12px;
+  overflow-x:auto;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.05);
+}
+
+svg.devre{width:100%;height:auto;display:block;min-width:680px}
+
+/* SVG styling overrides for neubrutalism feel */
+svg .w{stroke:#1a1a2e;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+svg .bat{stroke:#1a1a2e;stroke-width:3;stroke-linecap:round}
+svg .rbox{fill:var(--warn);stroke:#1a1a2e;stroke-width:2.5;rx:0}
+svg .node{fill:#1a1a2e}
+svg text{font-family:var(--font-mono);text-anchor:middle}
+svg .rname{font-size:13px;font-weight:700;fill:#1a1a2e}
+svg .rval{font-size:11.5px;fill:var(--ink2)}
+svg .rvi{font-size:11.5px;font-weight:700}
+svg .tv{fill:var(--volt)} svg .ti{fill:var(--amp)} svg .tsep{fill:#94a3b8}
+svg .pm{font-size:16px;font-weight:700;fill:var(--hero)}
+svg .src{font-size:13px;font-weight:700;fill:#1a1a2e;text-anchor:start}
+
+/* ══════ GIVEN VALUES ══════ */
+.verilen{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(110px,1fr));
+  gap:10px;
+  margin-bottom:8px;
+}
+.vk{
+  border:2px solid var(--border);
+  padding:10px 12px;
+  background:var(--card);
+  box-shadow:var(--shadow-sm);
+  transition:all .15s;
+}
+.vk:hover{
+  transform:translate(-2px,-2px);
+  box-shadow:5px 5px 0 var(--border);
+}
+.vk span{
+  display:block;
+  font-family:var(--font-mono);
+  font-size:11px;
+  font-weight:700;
+  color:var(--ink2);
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+.vk b{
+  font-size:16px;
+  font-family:var(--font-mono);
+  font-variant-numeric:tabular-nums;
+}
+.vk.kaynak{
+  background:var(--volt);
+  color:#fff;
+  border-color:var(--border);
+}
+.vk.kaynak span{color:rgba(255,255,255,.8)}
+.vk.kaynak b{color:#fff}
+
+/* ══════ NOTE BOX ══════ */
+.not{
+  background:var(--warn);
+  border:var(--border-w) solid var(--border);
+  box-shadow:var(--shadow-sm);
+  padding:14px 18px;
+  font-size:14px;
+  margin:16px 0;
+  font-family:var(--font-mono);
+}
+
+/* ══════ STEP BOXES ══════ */
+.adim{
+  background:var(--bg);
+  border:var(--border-w) solid var(--border);
+  padding:16px 20px;
+  margin-bottom:14px;
+  box-shadow:var(--shadow-sm);
+  transition:all .2s;
+}
+.adim:hover{
+  transform:translate(-2px,-2px);
+  box-shadow:5px 5px 0 var(--border);
+}
+.adim .no{
+  font-family:var(--font-mono);
+  font-size:11px;
+  font-weight:700;
+  color:var(--amp);
+  text-transform:uppercase;
+  letter-spacing:1.5px;
+  display:inline-block;
+  background:var(--ink);
+  color:var(--amp);
+  padding:3px 10px;
+  margin-bottom:8px;
+}
+.form{margin:4px 0;font-size:15px;font-family:var(--font-mono)}
+ul.hesap{margin:8px 0 0;padding-left:22px;font-size:14px;color:var(--ink2);font-family:var(--font-mono)}
+ul.hesap li{margin:4px 0}
+
+/* ══════ DISTRIBUTION ══════ */
+ul.dag{margin:8px 0;padding-left:22px}
+ul.dag li{margin:6px 0;font-size:14.5px;font-family:var(--font-mono)}
+
+/* ══════ RESULT BOX ══════ */
+.sonuc{
+  background:var(--power);
+  border:var(--border-w) solid var(--border);
+  box-shadow:var(--shadow);
+  padding:16px 22px;
+  font-size:17px;
+  font-weight:700;
+  font-family:var(--font-mono);
+  margin:16px 0;
+  color:#fff;
+  position:relative;
+  overflow:hidden;
+}
+.sonuc::before{
+  content:'⚡';
+  position:absolute;
+  right:15px;top:50%;
+  transform:translateY(-50%);
+  font-size:30px;
+  opacity:.3;
+}
+.sonuc b{color:#fff;font-size:19px}
+
+/* ══════ TABLES ══════ */
+table{
+  border-collapse:collapse;
+  width:100%;
+  font-size:14px;
+  margin:6px 0 8px;
+  font-family:var(--font-mono);
+  border:var(--border-w) solid var(--border);
+}
+th,td{
+  border:2px solid var(--border);
+  padding:10px 14px;
+  text-align:left;
+}
+th{
+  background:var(--ink);
+  color:#fff;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  font-weight:700;
+}
+tbody tr{background:var(--card);transition:all .15s}
+tbody tr:nth-child(even){background:var(--bg)}
+tbody tr:hover{
+  background:var(--warn);
+  transform:scale(1.01);
+}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+
+.ozet td.ok{color:var(--power);font-weight:700}
+
+/* ══════ GRID 2 COLUMN ══════ */
+.grid2{display:grid;grid-template-columns:1.55fr 1fr;gap:24px;align-items:start}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+
+/* ══════ VERIFICATION BOX ══════ */
+.kontrol{
+  border:var(--border-w) solid var(--border);
+  background:var(--card);
+  padding:16px 20px;
+  margin-bottom:14px;
+  box-shadow:var(--shadow-sm);
+  position:relative;
+  border-left:6px solid var(--power);
+}
+.kontrol::before{
+  content:'✓';
+  position:absolute;
+  right:12px;top:12px;
+  font-size:24px;
+  color:var(--power);
+  font-weight:700;
+  opacity:.3;
+}
+.kontrol h4{
+  margin:0 0 8px;
+  font-size:13px;
+  font-family:var(--font-mono);
+  color:var(--power);
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+.kontrol ul{margin:0;padding-left:20px;font-size:14px;font-family:var(--font-mono)}
+.kontrol li{margin:5px 0}
+
+/* ══════ YOUTUBE BOX ══════ */
+.yt{
+  background:var(--ink);
+  color:#fff;
+  border:var(--border-w) solid var(--border);
+  box-shadow:var(--shadow);
+  padding:18px 22px;
+  margin-top:24px;
+}
+.yt span{
+  display:block;
+  font-family:var(--font-mono);
+  font-size:11px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  opacity:.5;
+  margin-bottom:8px;
+}
+.yt b{font-size:17px;font-weight:600}
+
+/* ══════ FOOTER ══════ */
+footer{
+  text-align:center;
+  color:var(--ink2);
+  font-size:13px;
+  font-family:var(--font-mono);
+  padding:30px 0 10px;
+  border-top:var(--border-w) solid var(--border);
+  margin-top:20px;
+}
+
+/* ══════ SCROLL PROGRESS BAR ══════ */
+.scroll-progress{
+  position:fixed;
+  top:0;left:0;
+  height:4px;
+  background:linear-gradient(90deg, var(--volt), var(--amp), var(--power));
+  z-index:200;
+  width:0%;
+  transition:width .1s;
+}
+
+/* ══════ SCROLL REVEAL ANIMATION ══════ */
+.reveal{
+  opacity:0;
+  transform:translateY(40px);
+  transition:all .6s cubic-bezier(.16,1,.3,1);
+}
+.reveal.visible{
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* ══════ FLOATING PARTICLES (decorative) ══════ */
+.particle{
+  position:fixed;
+  width:8px;height:8px;
+  background:var(--volt);
+  opacity:.15;
+  pointer-events:none;
+  z-index:0;
+  animation:float 6s ease-in-out infinite;
+}
+.particle:nth-child(2){
+  width:12px;height:12px;
+  background:var(--amp);
+  animation-delay:-2s;
+  animation-duration:8s;
+}
+.particle:nth-child(3){
+  width:6px;height:6px;
+  background:var(--power);
+  animation-delay:-4s;
+  animation-duration:7s;
+}
+@keyframes float{
+  0%,100%{transform:translateY(0) rotate(0)}
+  33%{transform:translateY(-30px) rotate(120deg)}
+  66%{transform:translateY(15px) rotate(240deg)}
+}
+
+/* ══════ PULSE ANIMATION for active items ══════ */
+@keyframes pulse{
+  0%,100%{box-shadow:var(--shadow)}
+  50%{box-shadow:var(--shadow-lg)}
+}
+
+/* ══════ RESPONSIVE ══════ */
+@media(max-width:768px){
+  .hero-grid{
+    grid-template-columns:1fr;
+    padding:30px 20px 25px;
+  }
+  .hero-stats{justify-content:center}
+  .section-inner{padding:20px 16px 24px}
+  .sh{padding:18px 16px}
+  h3{font-size:14px}
+  nav a{font-size:11px;padding:6px 10px}
+}
+
+/* ══════ PRINT ══════ */
+@media print{
+  body{background:#fff}
+  nav,header.top,.scroll-progress,.particle{display:none}
+  section{
+    break-after:page;border:1px solid #000;
+    box-shadow:none;padding:0;margin:0 0 14px;
+  }
+  section:last-of-type{break-after:auto}
+  .wrap{max-width:none;padding:0}
+  h3{break-after:avoid;background:#000;color:#fff}
+  figure,table,.adim,.kontrol{break-inside:avoid}
+  svg.devre{min-width:0}
+  .sema{overflow:visible;border:1px solid #000}
+  .yt{background:#fff;color:#000;border:1px solid #000}
+}
+</style>
+</head>
+<body>
+
+<!-- Scroll Progress Bar -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- Decorative Particles -->
+<div class="particle" style="top:20%;left:5%"></div>
+<div class="particle" style="top:50%;left:90%"></div>
+<div class="particle" style="top:80%;left:15%"></div>
+
+<!-- ═══ HEADER ═══ -->
+<header class="top">
+<div class="hero-grid">
+  <div class="hero-text" style="display:flex;align-items:center;gap:28px;flex-wrap:wrap;">
+    <div class="logo-wrap">
+      <img src="logo.jpg" alt="Logo" class="logo-img">
+    </div>
+    <div>
+      <div class="hero-badge">⚡ DC Devre Analizi</div>
+      <h1>Seri-Paralel DC<br>Devre Çözümleri</h1>
+      <p>8 seviye · adım adım çözüm · kontrol hesapları · devre şemaları</p>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat"><span class="num">8</span><span class="lbl">Seviye</span></div>
+    <div class="hero-stat"><span class="num">3-10</span><span class="lbl">Direnç</span></div>
+    <div class="hero-stat"><span class="num">KVL</span><span class="lbl">Kontrol</span></div>
+    <div class="hero-stat"><span class="num">KCL</span><span class="lbl">Kontrol</span></div>
+  </div>
+</div>
+<div class="circuit-line"></div>
+</header>
+
+<!-- ═══ NAV ═══ -->
+<nav>
+<div class="wrap" style="padding-top:0;padding-bottom:0">
+  <a href="#overview">◈ Özet</a>
+  <a href="#s1">01 · 3R</a>
+  <a href="#s2">02 · 4R</a>
+  <a href="#s3">03 · 5R</a>
+  <a href="#s4">04 · 6R</a>
+  <a href="#s5">05 · 7R</a>
+  <a href="#s6">06 · 8R</a>
+  <a href="#s7">07 · 9R</a>
+  <a href="#s8">08 · 10R</a>
+</div>
+</nav>
+
+<div class="wrap">
+
+<!-- ═══ BENTO OVERVIEW GRID ═══ -->
+<div class="bento-overview" id="overview">
+  <div class="bento-card span-full" style="border-left:6px solid var(--volt)">
+    <div class="badge" style="background:var(--ink);color:#fff">◈ Genel Bakış</div>
+    <h2 style="font-size:24px;font-weight:700;margin:10px 0">Bütün Seviyelere Bakış</h2>
+    <p class="topo">Dirençler kΩ, gerilimler V cinsindendir. Bu yüzden akımlar doğrudan mA, güçler mW çıkar.</p>
+  </div>
+  <div class="bento-card span-full">
+    <table>
+      <thead><tr>
+        <th>Seviye</th><th>Direnç</th><th class="n">Kaynak</th>
+        <th class="n">R<sub>eş</sub></th><th class="n">I<sub>toplam</sub></th><th class="n">Toplam güç</th>
+      </tr></thead>
+      <tbody>
+        <tr><td><a href="#s1" style="color:var(--volt);text-decoration:none;font-weight:700">Seviye 1</a></td><td>3 adet</td><td class="n">26 V</td><td class="n">5.2 kΩ</td><td class="n">5 mA</td><td class="n">130 mW</td></tr>
+        <tr><td><a href="#s2" style="color:var(--amp);text-decoration:none;font-weight:700">Seviye 2</a></td><td>4 adet</td><td class="n">36 V</td><td class="n">9 kΩ</td><td class="n">4 mA</td><td class="n">144 mW</td></tr>
+        <tr><td><a href="#s3" style="color:var(--resist);text-decoration:none;font-weight:700">Seviye 3</a></td><td>5 adet</td><td class="n">45 V</td><td class="n">10 kΩ</td><td class="n">4.5 mA</td><td class="n">202.5 mW</td></tr>
+        <tr><td><a href="#s4" style="color:var(--power);text-decoration:none;font-weight:700">Seviye 4</a></td><td>6 adet</td><td class="n">30 V</td><td class="n">10 kΩ</td><td class="n">3 mA</td><td class="n">90 mW</td></tr>
+        <tr><td><a href="#s5" style="color:var(--hero);text-decoration:none;font-weight:700">Seviye 5</a></td><td>7 adet</td><td class="n">48 V</td><td class="n">10 kΩ</td><td class="n">4.8 mA</td><td class="n">230.4 mW</td></tr>
+        <tr><td><a href="#s6" style="color:var(--accent);text-decoration:none;font-weight:700">Seviye 6</a></td><td>8 adet</td><td class="n">52 V</td><td class="n">13 kΩ</td><td class="n">4 mA</td><td class="n">208 mW</td></tr>
+        <tr><td><a href="#s7" style="color:var(--warn);text-decoration:none;font-weight:700">Seviye 7</a></td><td>9 adet</td><td class="n">60 V</td><td class="n">15 kΩ</td><td class="n">4 mA</td><td class="n">240 mW</td></tr>
+        <tr><td><a href="#s8" style="font-weight:700;text-decoration:none">Seviye 8</a></td><td>10 adet</td><td class="n">56 V</td><td class="n">14 kΩ</td><td class="n">4 mA</td><td class="n">224 mW</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="bento-card color-volt">
+    <span style="font-family:var(--font-mono);font-size:40px">⚡</span>
+    <p style="font-family:var(--font-mono);font-size:13px;margin-top:8px;font-weight:700">GERİLİM</p>
+    <p style="font-size:13px;color:var(--ink2)">V = I × R<br>Ohm Yasası</p>
+  </div>
+  <div class="bento-card color-amp">
+    <span style="font-family:var(--font-mono);font-size:40px">〰</span>
+    <p style="font-family:var(--font-mono);font-size:13px;margin-top:8px;font-weight:700">AKIM</p>
+    <p style="font-size:13px;color:var(--ink2)">I = V ÷ R<br>mA cinsinden</p>
+  </div>
+  <div class="bento-card color-resist">
+    <span style="font-family:var(--font-mono);font-size:40px">⊗</span>
+    <p style="font-family:var(--font-mono);font-size:13px;margin-top:8px;font-weight:700">DİRENÇ</p>
+    <p style="font-size:13px;color:var(--ink2)">Seri: R₁+R₂<br>Paralel: R₁·R₂/(R₁+R₂)</p>
+  </div>
+  <div class="bento-card color-power">
+    <span style="font-family:var(--font-mono);font-size:40px">⏻</span>
+    <p style="font-family:var(--font-mono);font-size:13px;margin-top:8px;font-weight:700">GÜÇ</p>
+    <p style="font-size:13px;color:var(--ink2)">P = V × I<br>mW cinsinden</p>
+  </div>
+</div>
+
+<!-- ═══ SEVIYE SECTIONS ═══ -->
+
+<section id="s1"><div class="sh"><span class="badge">Seviye 1</span><h2>3 Dirençli Seri-Paralel DC Devre</h2><p class="topo"><strong>R1</strong> kaynağa seri bağlıdır; ardından <strong>R2</strong> ile <strong>R3</strong> birbirine paralel bağlanmıştır. Yani akım önce R1'den tek parça geçer, sonra ikiye ayrılıp R2 ve R3 kollarından akar ve tekrar birleşir.</p></div><div class="section-inner"><figure><figcaption>Devre şeması</figcaption><div class="sema"><svg class="devre" viewBox="0 0 466 284" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seviye 1 devre şeması"><line class="w" x1="124.0" y1="126.0" x2="163.0" y2="126.0"/><line class="w" x1="231.0" y1="126.0" x2="270.0" y2="126.0"/><rect class="rbox" x="163.0" y="113.0" width="68" height="26" rx="3"/><text class="rname" x="197.0" y="130.5">R1</text><text class="rval" x="197.0" y="105.0">4 kΩ</text><line class="w" x1="270.0" y1="126.0" x2="300.0" y2="126.0"/><line class="w" x1="386.0" y1="126.0" x2="416.0" y2="126.0"/><line class="w" x1="300.0" y1="83.0" x2="309.0" y2="83.0"/><line class="w" x1="377.0" y1="83.0" x2="386.0" y2="83.0"/><rect class="rbox" x="309.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="87.5">R2</text><text class="rval" x="343.0" y="62.0">2 kΩ</text><line class="w" x1="300.0" y1="169.0" x2="309.0" y2="169.0"/><line class="w" x1="377.0" y1="169.0" x2="386.0" y2="169.0"/><rect class="rbox" x="309.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="173.5">R3</text><text class="rval" x="343.0" y="148.0">3 kΩ</text><line class="w" x1="300.0" y1="83.0" x2="300.0" y2="169.0"/><line class="w" x1="386.0" y1="83.0" x2="386.0" y2="169.0"/><circle class="node" cx="300.0" cy="83.0" r="3.4"/><circle class="node" cx="386.0" cy="83.0" r="3.4"/><circle class="node" cx="300.0" cy="169.0" r="3.4"/><circle class="node" cx="386.0" cy="169.0" r="3.4"/><polyline class="w" points="60.0,174.0 60.0,126.0 124.0,126.0"/><polyline class="w" points="416.0,126.0 436.0,126.0 436.0,254.0 60.0,254.0 60.0,206.0"/><line class="bat" x1="42.0" y1="181.0" x2="78.0" y2="181.0"/><line class="bat" x1="52.0" y1="187.0" x2="68.0" y2="187.0"/><line class="bat" x1="42.0" y1="193.0" x2="78.0" y2="193.0"/><line class="bat" x1="52.0" y1="199.0" x2="68.0" y2="199.0"/><text class="pm" x="32.0" y="185.0">+</text><text class="pm" x="32.0" y="206.0">−</text><text class="src" x="86.0" y="194.0">26 V</text></svg></div></figure><figcaption>Verilen değerler</figcaption><div class="verilen"><div class="vk kaynak"><span>KAYNAK V</span><b>26 V</b></div><div class="vk"><span>R1</span><b>4 kΩ</b></div><div class="vk"><span>R2</span><b>2 kΩ</b></div><div class="vk"><span>R3</span><b>3 kΩ</b></div></div><div class="not"><b>Birim kuralı:</b> kΩ ve V kullanıldığı için V ÷ kΩ doğrudan <b>mA</b>, V × mA ise <b>mW</b> verir.</div><h3>1. Eşdeğer direnç — adım adım</h3><p class="topo">En içteki paralel gruptan başlanır, tek dirence indirgenir, sonra dışa doğru ilerlenir. Seri olanlar en sonda toplanır.</p><div class="adim"><span class="no">Adım 1</span><p class="form"><strong>R23 = (R2 · R3) / (R2 + R3)</strong>  (iki direnç paralel → çarpım/toplam)</p><ul class="hesap"><li>Çarpım: 2 · 3 = 6</li><li>Toplam: 2 + 3 = 5</li><li>R23 = 6 / 5 = <strong>1.2 kΩ</strong></li></ul></div><div class="adim"><span class="no">Adım 2</span><p class="form"><strong>R_eş = R1 + R23</strong>  (seri bağlı, doğrudan toplanır)</p><p class="form">R_eş = 4 + 1.2 = <strong>5.2 kΩ</strong></p></div><div class="sonuc">Eşdeğer direnç: <b>R_eş = 5.2 kΩ</b></div><h3>2. Toplam akım</h3><div class="sonuc">I_toplam = V ÷ R_eş = 26 ÷ 5.2 = <b>5 mA</b></div><h3>3. Çözülmüş devre</h3><figure><figcaption>Her direncin üzerindeki gerilim (<span style="color:var(--v)">turuncu</span>) ve akımı (<span style="color:var(--i)">yeşil</span>)</figcaption><div class="sema"><svg class="devre" viewBox="0 0 466 284" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seviye 1 çözüm şeması"><line class="w" x1="124.0" y1="126.0" x2="163.0" y2="126.0"/><line class="w" x1="231.0" y1="126.0" x2="270.0" y2="126.0"/><rect class="rbox" x="163.0" y="113.0" width="68" height="26" rx="3"/><text class="rname" x="197.0" y="130.5">R1</text><text class="rval" x="197.0" y="105.0">4 kΩ</text><text class="rvi" x="197.0" y="155.0"><tspan class="tv">20 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">5 mA</tspan></text><line class="w" x1="270.0" y1="126.0" x2="300.0" y2="126.0"/><line class="w" x1="386.0" y1="126.0" x2="416.0" y2="126.0"/><line class="w" x1="300.0" y1="83.0" x2="309.0" y2="83.0"/><line class="w" x1="377.0" y1="83.0" x2="386.0" y2="83.0"/><rect class="rbox" x="309.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="87.5">R2</text><text class="rval" x="343.0" y="62.0">2 kΩ</text><text class="rvi" x="343.0" y="112.0"><tspan class="tv">6 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">3 mA</tspan></text><line class="w" x1="300.0" y1="169.0" x2="309.0" y2="169.0"/><line class="w" x1="377.0" y1="169.0" x2="386.0" y2="169.0"/><rect class="rbox" x="309.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="173.5">R3</text><text class="rval" x="343.0" y="148.0">3 kΩ</text><text class="rvi" x="343.0" y="198.0"><tspan class="tv">6 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="300.0" y1="83.0" x2="300.0" y2="169.0"/><line class="w" x1="386.0" y1="83.0" x2="386.0" y2="169.0"/><circle class="node" cx="300.0" cy="83.0" r="3.4"/><circle class="node" cx="386.0" cy="83.0" r="3.4"/><circle class="node" cx="300.0" cy="169.0" r="3.4"/><circle class="node" cx="386.0" cy="169.0" r="3.4"/><polyline class="w" points="60.0,174.0 60.0,126.0 124.0,126.0"/><polyline class="w" points="416.0,126.0 436.0,126.0 436.0,254.0 60.0,254.0 60.0,206.0"/><line class="bat" x1="42.0" y1="181.0" x2="78.0" y2="181.0"/><line class="bat" x1="52.0" y1="187.0" x2="68.0" y2="187.0"/><line class="bat" x1="42.0" y1="193.0" x2="78.0" y2="193.0"/><line class="bat" x1="52.0" y1="199.0" x2="68.0" y2="199.0"/><text class="pm" x="32.0" y="185.0">+</text><text class="pm" x="32.0" y="206.0">−</text><text class="src" x="86.0" y="194.0">26 V</text></svg></div></figure><h3>4. Gerilim ve akım dağılımı</h3><p class="topo">Seri bağlı elemanlardan aynı akım geçer; paralel kolların uçlarındaki gerilim aynıdır.</p><ul class="dag"><li><strong>R1</strong> üzerinden 5 mA geçer → V_1 = I · R = 5 · 4 = <strong>20 V</strong></li><li><strong>R23</strong> grubunun uçlarındaki gerilim: V = I · R = 5 · 1.2 = <strong>6 V</strong></li><ul class="dag"><li>Bu paralel grubun her kolunda aynı <strong>6 V</strong> vardır:</li><ul class="dag"><li><strong>R2</strong>: I = V / R = 6 / 2 = <strong>3 mA</strong>  (gerilimi 6 V)</li><li><strong>R3</strong>: I = V / R = 6 / 3 = <strong>2 mA</strong>  (gerilimi 6 V)</li></ul></ul></ul><h3>5. Özet tablo</h3><table class="ozet"><thead><tr><th>Direnç</th><th class="n">R (kΩ)</th><th class="n">V (V)</th><th class="n">I (mA)</th><th class="n">P = V·I (mW)</th></tr></thead><tbody><tr><th>R1</th><td class="n">4</td><td class="n">20</td><td class="n">5</td><td class="n">100</td></tr><tr><th>R2</th><td class="n">2</td><td class="n">6</td><td class="n">3</td><td class="n">18</td></tr><tr><th>R3</th><td class="n">3</td><td class="n">6</td><td class="n">2</td><td class="n">12</td></tr><tr><th>Toplam</th><td class="n">R_eş = 5.2</td><td class="n">26</td><td class="n">5</td><td class="n">130</td></tr></tbody></table><h3>6. Kontroller</h3><div class="kontrol"><h4>KVL — gerilim düşümleri toplamı</h4><ul><li>V(R1) + V(R23) = 20 + 6 = <strong>26 V</strong> = kaynak gerilimi 26 V ✔</li></ul></div><div class="kontrol"><h4>KCL — düğüm akımları toplamı</h4><ul><li>R23 düğümü: I(R2) + I(R3) = 3 + 2 = <strong>5 mA</strong> = gruba giren akım 5 mA ✔</li></ul></div><div class="kontrol"><h4>Güç dengesi</h4><ul><li>Dirençlerin güçleri toplamı: <strong>130 mW</strong></li><li>Kaynağın verdiği güç: 26 · 5 = <strong>130 mW</strong></li><li>İkisi eşit ✔ — enerji korunumu sağlanıyor</li></ul></div><h3>7. Simülatörde beklenen değerler</h3><p class="topo">EveryCircuit / Proto gibi bir uygulamada devreyi kurunca ölçtüğünüz değerler bunlarla birebir aynı çıkmalı.</p><table><thead><tr><th>Ölçülecek</th><th class="n">Beklenen</th></tr></thead><tbody><tr><th>Eşdeğer direnç</th><td class="n">5.2 kΩ</td></tr><tr><th>Toplam akım</th><td class="n">5 mA</td></tr><tr><th>R1 → V / I</th><td class="n">20 V / 5 mA</td></tr><tr><th>R2 → V / I</th><td class="n">6 V / 3 mA</td></tr><tr><th>R3 → V / I</th><td class="n">6 V / 2 mA</td></tr></tbody></table><div class="yt"><span>YouTube video başlığı</span><b>3 Dirençli Seri-Paralel DC Devre Çözümü by ______________</b></div></div></section>
+<section id="s2"><div class="sh"><span class="badge">Seviye 2</span><h2>4 Dirençli Seri-Paralel DC Devre</h2><p class="topo"><strong>R1</strong> seri, sonra <strong>R2 ∥ R3</strong> paralel ikilisi, en sonda yine seri olarak <strong>R4</strong> vardır. Akım R1'den geçer, paralel grupta ikiye ayrılır, birleşir ve R4'ten geçerek kaynağa döner.</p></div><div class="section-inner"><figure><figcaption>Devre şeması</figcaption><div class="sema"><svg class="devre" viewBox="0 0 612 284" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seviye 2 devre şeması"><line class="w" x1="124.0" y1="126.0" x2="163.0" y2="126.0"/><line class="w" x1="231.0" y1="126.0" x2="270.0" y2="126.0"/><rect class="rbox" x="163.0" y="113.0" width="68" height="26" rx="3"/><text class="rname" x="197.0" y="130.5">R1</text><text class="rval" x="197.0" y="105.0">2 kΩ</text><line class="w" x1="270.0" y1="126.0" x2="300.0" y2="126.0"/><line class="w" x1="386.0" y1="126.0" x2="416.0" y2="126.0"/><line class="w" x1="300.0" y1="83.0" x2="309.0" y2="83.0"/><line class="w" x1="377.0" y1="83.0" x2="386.0" y2="83.0"/><rect class="rbox" x="309.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="87.5">R2</text><text class="rval" x="343.0" y="62.0">4 kΩ</text><line class="w" x1="300.0" y1="169.0" x2="309.0" y2="169.0"/><line class="w" x1="377.0" y1="169.0" x2="386.0" y2="169.0"/><rect class="rbox" x="309.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="173.5">R3</text><text class="rval" x="343.0" y="148.0">4 kΩ</text><line class="w" x1="300.0" y1="83.0" x2="300.0" y2="169.0"/><line class="w" x1="386.0" y1="83.0" x2="386.0" y2="169.0"/><circle class="node" cx="300.0" cy="83.0" r="3.4"/><circle class="node" cx="386.0" cy="83.0" r="3.4"/><circle class="node" cx="300.0" cy="169.0" r="3.4"/><circle class="node" cx="386.0" cy="169.0" r="3.4"/><line class="w" x1="416.0" y1="126.0" x2="455.0" y2="126.0"/><line class="w" x1="523.0" y1="126.0" x2="562.0" y2="126.0"/><rect class="rbox" x="455.0" y="113.0" width="68" height="26" rx="3"/><text class="rname" x="489.0" y="130.5">R4</text><text class="rval" x="489.0" y="105.0">5 kΩ</text><polyline class="w" points="60.0,174.0 60.0,126.0 124.0,126.0"/><polyline class="w" points="562.0,126.0 582.0,126.0 582.0,254.0 60.0,254.0 60.0,206.0"/><line class="bat" x1="42.0" y1="181.0" x2="78.0" y2="181.0"/><line class="bat" x1="52.0" y1="187.0" x2="68.0" y2="187.0"/><line class="bat" x1="42.0" y1="193.0" x2="78.0" y2="193.0"/><line class="bat" x1="52.0" y1="199.0" x2="68.0" y2="199.0"/><text class="pm" x="32.0" y="185.0">+</text><text class="pm" x="32.0" y="206.0">−</text><text class="src" x="86.0" y="194.0">36 V</text></svg></div></figure><figcaption>Verilen değerler</figcaption><div class="verilen"><div class="vk kaynak"><span>KAYNAK V</span><b>36 V</b></div><div class="vk"><span>R1</span><b>2 kΩ</b></div><div class="vk"><span>R2</span><b>4 kΩ</b></div><div class="vk"><span>R3</span><b>4 kΩ</b></div><div class="vk"><span>R4</span><b>5 kΩ</b></div></div><div class="not"><b>Birim kuralı:</b> kΩ ve V kullanıldığı için V ÷ kΩ doğrudan <b>mA</b>, V × mA ise <b>mW</b> verir.</div><h3>1. Eşdeğer direnç — adım adım</h3><p class="topo">En içteki paralel gruptan başlanır, tek dirence indirgenir, sonra dışa doğru ilerlenir. Seri olanlar en sonda toplanır.</p><div class="adim"><span class="no">Adım 1</span><p class="form"><strong>R23 = (R2 · R3) / (R2 + R3)</strong>  (iki direnç paralel → çarpım/toplam)</p><ul class="hesap"><li>Çarpım: 4 · 4 = 16</li><li>Toplam: 4 + 4 = 8</li><li>R23 = 16 / 8 = <strong>2 kΩ</strong></li></ul></div><div class="adim"><span class="no">Adım 2</span><p class="form"><strong>R_eş = R1 + R23 + R4</strong>  (seri bağlı, doğrudan toplanır)</p><p class="form">R_eş = 2 + 2 + 5 = <strong>9 kΩ</strong></p></div><div class="sonuc">Eşdeğer direnç: <b>R_eş = 9 kΩ</b></div><h3>2. Toplam akım</h3><div class="sonuc">I_toplam = V ÷ R_eş = 36 ÷ 9 = <b>4 mA</b></div><h3>3. Çözülmüş devre</h3><figure><figcaption>Her direncin üzerindeki gerilim (<span style="color:var(--v)">turuncu</span>) ve akımı (<span style="color:var(--i)">yeşil</span>)</figcaption><div class="sema"><svg class="devre" viewBox="0 0 612 284" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seviye 2 çözüm şeması"><line class="w" x1="124.0" y1="126.0" x2="163.0" y2="126.0"/><line class="w" x1="231.0" y1="126.0" x2="270.0" y2="126.0"/><rect class="rbox" x="163.0" y="113.0" width="68" height="26" rx="3"/><text class="rname" x="197.0" y="130.5">R1</text><text class="rval" x="197.0" y="105.0">2 kΩ</text><text class="rvi" x="197.0" y="155.0"><tspan class="tv">8 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">4 mA</tspan></text><line class="w" x1="270.0" y1="126.0" x2="300.0" y2="126.0"/><line class="w" x1="386.0" y1="126.0" x2="416.0" y2="126.0"/><line class="w" x1="300.0" y1="83.0" x2="309.0" y2="83.0"/><line class="w" x1="377.0" y1="83.0" x2="386.0" y2="83.0"/><rect class="rbox" x="309.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="87.5">R2</text><text class="rval" x="343.0" y="62.0">4 kΩ</text><text class="rvi" x="343.0" y="112.0"><tspan class="tv">8 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="300.0" y1="169.0" x2="309.0" y2="169.0"/><line class="w" x1="377.0" y1="169.0" x2="386.0" y2="169.0"/><rect class="rbox" x="309.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="173.5">R3</text><text class="rval" x="343.0" y="148.0">4 kΩ</text><text class="rvi" x="343.0" y="198.0"><tspan class="tv">8 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="300.0" y1="83.0" x2="300.0" y2="169.0"/><line class="w" x1="386.0" y1="83.0" x2="386.0" y2="169.0"/><circle class="node" cx="300.0" cy="83.0" r="3.4"/><circle class="node" cx="386.0" cy="83.0" r="3.4"/><circle class="node" cx="300.0" cy="169.0" r="3.4"/><circle class="node" cx="386.0" cy="169.0" r="3.4"/><line class="w" x1="416.0" y1="126.0" x2="455.0" y2="126.0"/><line class="w" x1="523.0" y1="126.0" x2="562.0" y2="126.0"/><rect class="rbox" x="455.0" y="113.0" width="68" height="26" rx="3"/><text class="rname" x="489.0" y="130.5">R4</text><text class="rval" x="489.0" y="105.0">5 kΩ</text><text class="rvi" x="489.0" y="155.0"><tspan class="tv">20 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">4 mA</tspan></text><polyline class="w" points="60.0,174.0 60.0,126.0 124.0,126.0"/><polyline class="w" points="562.0,126.0 582.0,126.0 582.0,254.0 60.0,254.0 60.0,206.0"/><line class="bat" x1="42.0" y1="181.0" x2="78.0" y2="181.0"/><line class="bat" x1="52.0" y1="187.0" x2="68.0" y2="187.0"/><line class="bat" x1="42.0" y1="193.0" x2="78.0" y2="193.0"/><line class="bat" x1="52.0" y1="199.0" x2="68.0" y2="199.0"/><text class="pm" x="32.0" y="185.0">+</text><text class="pm" x="32.0" y="206.0">−</text><text class="src" x="86.0" y="194.0">36 V</text></svg></div></figure><h3>4. Gerilim ve akım dağılımı</h3><p class="topo">Seri bağlı elemanlardan aynı akım geçer; paralel kolların uçlarındaki gerilim aynıdır.</p><ul class="dag"><li><strong>R1</strong> üzerinden 4 mA geçer → V_1 = I · R = 4 · 2 = <strong>8 V</strong></li><li><strong>R23</strong> grubunun uçlarındaki gerilim: V = I · R = 4 · 2 = <strong>8 V</strong></li><ul class="dag"><li>Bu paralel grubun her kolunda aynı <strong>8 V</strong> vardır:</li><ul class="dag"><li><strong>R2</strong>: I = V / R = 8 / 4 = <strong>2 mA</strong>  (gerilimi 8 V)</li><li><strong>R3</strong>: I = V / R = 8 / 4 = <strong>2 mA</strong>  (gerilimi 8 V)</li></ul></ul><li><strong>R4</strong> üzerinden 4 mA geçer → V_4 = I · R = 4 · 5 = <strong>20 V</strong></li></ul><h3>5. Özet tablo</h3><table class="ozet"><thead><tr><th>Direnç</th><th class="n">R (kΩ)</th><th class="n">V (V)</th><th class="n">I (mA)</th><th class="n">P = V·I (mW)</th></tr></thead><tbody><tr><th>R1</th><td class="n">2</td><td class="n">8</td><td class="n">4</td><td class="n">32</td></tr><tr><th>R2</th><td class="n">4</td><td class="n">8</td><td class="n">2</td><td class="n">16</td></tr><tr><th>R3</th><td class="n">4</td><td class="n">8</td><td class="n">2</td><td class="n">16</td></tr><tr><th>R4</th><td class="n">5</td><td class="n">20</td><td class="n">4</td><td class="n">80</td></tr><tr><th>Toplam</th><td class="n">R_eş = 9</td><td class="n">36</td><td class="n">4</td><td class="n">144</td></tr></tbody></table><h3>6. Kontroller</h3><div class="kontrol"><h4>KVL — gerilim düşümleri toplamı</h4><ul><li>V(R1) + V(R23) + V(R4) = 8 + 8 + 20 = <strong>36 V</strong> = kaynak gerilimi 36 V ✔</li></ul></div><div class="kontrol"><h4>KCL — düğüm akımları toplamı</h4><ul><li>R23 düğümü: I(R2) + I(R3) = 2 + 2 = <strong>4 mA</strong> = gruba giren akım 4 mA ✔</li></ul></div><div class="kontrol"><h4>Güç dengesi</h4><ul><li>Dirençlerin güçleri toplamı: <strong>144 mW</strong></li><li>Kaynağın verdiği güç: 36 · 4 = <strong>144 mW</strong></li><li>İkisi eşit ✔ — enerji korunumu sağlanıyor</li></ul></div><h3>7. Simülatörde beklenen değerler</h3><p class="topo">EveryCircuit / Proto gibi bir uygulamada devreyi kurunca ölçtüğünüz değerler bunlarla birebir aynı çıkmalı.</p><table><thead><tr><th>Ölçülecek</th><th class="n">Beklenen</th></tr></thead><tbody><tr><th>Eşdeğer direnç</th><td class="n">9 kΩ</td></tr><tr><th>Toplam akım</th><td class="n">4 mA</td></tr><tr><th>R1 → V / I</th><td class="n">8 V / 4 mA</td></tr><tr><th>R2 → V / I</th><td class="n">8 V / 2 mA</td></tr><tr><th>R3 → V / I</th><td class="n">8 V / 2 mA</td></tr><tr><th>R4 → V / I</th><td class="n">20 V / 4 mA</td></tr></tbody></table><div class="yt"><span>YouTube video başlığı</span><b>4 Dirençli Seri-Paralel DC Devre Çözümü by ______________</b></div></div></section>
+<section id="s3"><div class="sh"><span class="badge">Seviye 3</span><h2>5 Dirençli Seri-Paralel DC Devre</h2><p class="topo"><strong>R1</strong> seri, ortada <strong>R2 ∥ R3 ∥ R4</strong> üçlü paralel grubu, sonda <strong>R5</strong> seri. Akım R1'den geçip üç kola ayrılır, birleşir, R5'ten geçer.</p></div><div class="section-inner"><figure><figcaption>Devre şeması</figcaption><div class="sema"><svg class="devre" viewBox="0 0 612 370" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seviye 3 devre şeması"><line class="w" x1="124.0" y1="169.0" x2="163.0" y2="169.0"/><line class="w" x1="231.0" y1="169.0" x2="270.0" y2="169.0"/><rect class="rbox" x="163.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="197.0" y="173.5">R1</text><text class="rval" x="197.0" y="148.0">5 kΩ</text><line class="w" x1="270.0" y1="169.0" x2="300.0" y2="169.0"/><line class="w" x1="386.0" y1="169.0" x2="416.0" y2="169.0"/><line class="w" x1="300.0" y1="83.0" x2="309.0" y2="83.0"/><line class="w" x1="377.0" y1="83.0" x2="386.0" y2="83.0"/><rect class="rbox" x="309.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="87.5">R2</text><text class="rval" x="343.0" y="62.0">3 kΩ</text><line class="w" x1="300.0" y1="169.0" x2="309.0" y2="169.0"/><line class="w" x1="377.0" y1="169.0" x2="386.0" y2="169.0"/><rect class="rbox" x="309.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="173.5">R3</text><text class="rval" x="343.0" y="148.0">6 kΩ</text><line class="w" x1="300.0" y1="255.0" x2="309.0" y2="255.0"/><line class="w" x1="377.0" y1="255.0" x2="386.0" y2="255.0"/><rect class="rbox" x="309.0" y="242.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="259.5">R4</text><text class="rval" x="343.0" y="234.0">2 kΩ</text><line class="w" x1="300.0" y1="83.0" x2="300.0" y2="255.0"/><line class="w" x1="386.0" y1="83.0" x2="386.0" y2="255.0"/><circle class="node" cx="300.0" cy="83.0" r="3.4"/><circle class="node" cx="386.0" cy="83.0" r="3.4"/><circle class="node" cx="300.0" cy="169.0" r="3.4"/><circle class="node" cx="386.0" cy="169.0" r="3.4"/><circle class="node" cx="300.0" cy="255.0" r="3.4"/><circle class="node" cx="386.0" cy="255.0" r="3.4"/><line class="w" x1="416.0" y1="169.0" x2="455.0" y2="169.0"/><line class="w" x1="523.0" y1="169.0" x2="562.0" y2="169.0"/><rect class="rbox" x="455.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="489.0" y="173.5">R5</text><text class="rval" x="489.0" y="148.0">4 kΩ</text><polyline class="w" points="60.0,238.5 60.0,169.0 124.0,169.0"/><polyline class="w" points="562.0,169.0 582.0,169.0 582.0,340.0 60.0,340.0 60.0,270.5"/><line class="bat" x1="42.0" y1="245.5" x2="78.0" y2="245.5"/><line class="bat" x1="52.0" y1="251.5" x2="68.0" y2="251.5"/><line class="bat" x1="42.0" y1="257.5" x2="78.0" y2="257.5"/><line class="bat" x1="52.0" y1="263.5" x2="68.0" y2="263.5"/><text class="pm" x="32.0" y="249.5">+</text><text class="pm" x="32.0" y="270.5">−</text><text class="src" x="86.0" y="258.5">45 V</text></svg></div></figure><figcaption>Verilen değerler</figcaption><div class="verilen"><div class="vk kaynak"><span>KAYNAK V</span><b>45 V</b></div><div class="vk"><span>R1</span><b>5 kΩ</b></div><div class="vk"><span>R2</span><b>3 kΩ</b></div><div class="vk"><span>R3</span><b>6 kΩ</b></div><div class="vk"><span>R4</span><b>2 kΩ</b></div><div class="vk"><span>R5</span><b>4 kΩ</b></div></div><div class="not"><b>Birim kuralı:</b> kΩ ve V kullanıldığı için V ÷ kΩ doğrudan <b>mA</b>, V × mA ise <b>mW</b> verir.</div><h3>1. Eşdeğer direnç — adım adım</h3><p class="topo">En içteki paralel gruptan başlanır, tek dirence indirgenir, sonra dışa doğru ilerlenir. Seri olanlar en sonda toplanır.</p><div class="adim"><span class="no">Adım 1</span><p class="form"><strong>1/R234 = 1/R2 + 1/R3 + 1/R4</strong>  (ikiden fazla paralel → ters toplam)</p><ul class="hesap"><li>1/R234 = 1/3 + 1/6 + 1/2</li><li>1/R234 ≈ 0.33333 + 0.16667 + 0.5 = 1  (1/kΩ)</li><li>R234 = 1 / 1 = <strong>1 kΩ</strong></li></ul></div><div class="adim"><span class="no">Adım 2</span><p class="form"><strong>R_eş = R1 + R234 + R5</strong>  (seri bağlı, doğrudan toplanır)</p><p class="form">R_eş = 5 + 1 + 4 = <strong>10 kΩ</strong></p></div><div class="sonuc">Eşdeğer direnç: <b>R_eş = 10 kΩ</b></div><h3>2. Toplam akım</h3><div class="sonuc">I_toplam = V ÷ R_eş = 45 ÷ 10 = <b>4.5 mA</b></div><h3>3. Çözülmüş devre</h3><figure><figcaption>Her direncin üzerindeki gerilim (<span style="color:var(--v)">turuncu</span>) ve akımı (<span style="color:var(--i)">yeşil</span>)</figcaption><div class="sema"><svg class="devre" viewBox="0 0 612 370" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seviye 3 çözüm şeması"><line class="w" x1="124.0" y1="169.0" x2="163.0" y2="169.0"/><line class="w" x1="231.0" y1="169.0" x2="270.0" y2="169.0"/><rect class="rbox" x="163.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="197.0" y="173.5">R1</text><text class="rval" x="197.0" y="148.0">5 kΩ</text><text class="rvi" x="197.0" y="198.0"><tspan class="tv">22.5 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">4.5 mA</tspan></text><line class="w" x1="270.0" y1="169.0" x2="300.0" y2="169.0"/><line class="w" x1="386.0" y1="169.0" x2="416.0" y2="169.0"/><line class="w" x1="300.0" y1="83.0" x2="309.0" y2="83.0"/><line class="w" x1="377.0" y1="83.0" x2="386.0" y2="83.0"/><rect class="rbox" x="309.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="87.5">R2</text><text class="rval" x="343.0" y="62.0">3 kΩ</text><text class="rvi" x="343.0" y="112.0"><tspan class="tv">4.5 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">1.5 mA</tspan></text><line class="w" x1="300.0" y1="169.0" x2="309.0" y2="169.0"/><line class="w" x1="377.0" y1="169.0" x2="386.0" y2="169.0"/><rect class="rbox" x="309.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="173.5">R3</text><text class="rval" x="343.0" y="148.0">6 kΩ</text><text class="rvi" x="343.0" y="198.0"><tspan class="tv">4.5 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">0.75 mA</tspan></text><line class="w" x1="300.0" y1="255.0" x2="309.0" y2="255.0"/><line class="w" x1="377.0" y1="255.0" x2="386.0" y2="255.0"/><rect class="rbox" x="309.0" y="242.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="259.5">R4</text><text class="rval" x="343.0" y="234.0">2 kΩ</text><text class="rvi" x="343.0" y="284.0"><tspan class="tv">4.5 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2.25 mA</tspan></text><line class="w" x1="300.0" y1="83.0" x2="300.0" y2="255.0"/><line class="w" x1="386.0" y1="83.0" x2="386.0" y2="255.0"/><circle class="node" cx="300.0" cy="83.0" r="3.4"/><circle class="node" cx="386.0" cy="83.0" r="3.4"/><circle class="node" cx="300.0" cy="169.0" r="3.4"/><circle class="node" cx="386.0" cy="169.0" r="3.4"/><circle class="node" cx="300.0" cy="255.0" r="3.4"/><circle class="node" cx="386.0" cy="255.0" r="3.4"/><line class="w" x1="416.0" y1="169.0" x2="455.0" y2="169.0"/><line class="w" x1="523.0" y1="169.0" x2="562.0" y2="169.0"/><rect class="rbox" x="455.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="489.0" y="173.5">R5</text><text class="rval" x="489.0" y="148.0">4 kΩ</text><text class="rvi" x="489.0" y="198.0"><tspan class="tv">18 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">4.5 mA</tspan></text><polyline class="w" points="60.0,238.5 60.0,169.0 124.0,169.0"/><polyline class="w" points="562.0,169.0 582.0,169.0 582.0,340.0 60.0,340.0 60.0,270.5"/><line class="bat" x1="42.0" y1="245.5" x2="78.0" y2="245.5"/><line class="bat" x1="52.0" y1="251.5" x2="68.0" y2="251.5"/><line class="bat" x1="42.0" y1="257.5" x2="78.0" y2="257.5"/><line class="bat" x1="52.0" y1="263.5" x2="68.0" y2="263.5"/><text class="pm" x="32.0" y="249.5">+</text><text class="pm" x="32.0" y="270.5">−</text><text class="src" x="86.0" y="258.5">45 V</text></svg></div></figure><h3>4. Gerilim ve akım dağılımı</h3><p class="topo">Seri bağlı elemanlardan aynı akım geçer; paralel kolların uçlarındaki gerilim aynıdır.</p><ul class="dag"><li><strong>R1</strong> üzerinden 4.5 mA geçer → V_1 = I · R = 4.5 · 5 = <strong>22.5 V</strong></li><li><strong>R234</strong> grubunun uçlarındaki gerilim: V = I · R = 4.5 · 1 = <strong>4.5 V</strong></li><ul class="dag"><li>Bu paralel grubun her kolunda aynı <strong>4.5 V</strong> vardır:</li><ul class="dag"><li><strong>R2</strong>: I = V / R = 4.5 / 3 = <strong>1.5 mA</strong>  (gerilimi 4.5 V)</li><li><strong>R3</strong>: I = V / R = 4.5 / 6 = <strong>0.75 mA</strong>  (gerilimi 4.5 V)</li><li><strong>R4</strong>: I = V / R = 4.5 / 2 = <strong>2.25 mA</strong>  (gerilimi 4.5 V)</li></ul></ul><li><strong>R5</strong> üzerinden 4.5 mA geçer → V_5 = I · R = 4.5 · 4 = <strong>18 V</strong></li></ul><h3>5. Özet tablo</h3><table class="ozet"><thead><tr><th>Direnç</th><th class="n">R (kΩ)</th><th class="n">V (V)</th><th class="n">I (mA)</th><th class="n">P = V·I (mW)</th></tr></thead><tbody><tr><th>R1</th><td class="n">5</td><td class="n">22.5</td><td class="n">4.5</td><td class="n">101.25</td></tr><tr><th>R2</th><td class="n">3</td><td class="n">4.5</td><td class="n">1.5</td><td class="n">6.75</td></tr><tr><th>R3</th><td class="n">6</td><td class="n">4.5</td><td class="n">0.75</td><td class="n">3.375</td></tr><tr><th>R4</th><td class="n">2</td><td class="n">4.5</td><td class="n">2.25</td><td class="n">10.125</td></tr><tr><th>R5</th><td class="n">4</td><td class="n">18</td><td class="n">4.5</td><td class="n">81</td></tr><tr><th>Toplam</th><td class="n">R_eş = 10</td><td class="n">45</td><td class="n">4.5</td><td class="n">202.5</td></tr></tbody></table><h3>6. Kontroller</h3><div class="kontrol"><h4>KVL — gerilim düşümleri toplamı</h4><ul><li>V(R1) + V(R234) + V(R5) = 22.5 + 4.5 + 18 = <strong>45 V</strong> = kaynak gerilimi 45 V ✔</li></ul></div><div class="kontrol"><h4>KCL — düğüm akımları toplamı</h4><ul><li>R234 düğümü: I(R2) + I(R3) + I(R4) = 1.5 + 0.75 + 2.25 = <strong>4.5 mA</strong> = gruba giren akım 4.5 mA ✔</li></ul></div><div class="kontrol"><h4>Güç dengesi</h4><ul><li>Dirençlerin güçleri toplamı: <strong>202.5 mW</strong></li><li>Kaynağın verdiği güç: 45 · 4.5 = <strong>202.5 mW</strong></li><li>İkisi eşit ✔ — enerji korunumu sağlanıyor</li></ul></div><h3>7. Simülatörde beklenen değerler</h3><p class="topo">EveryCircuit / Proto gibi bir uygulamada devreyi kurunca ölçtüğünüz değerler bunlarla birebir aynı çıkmalı.</p><table><thead><tr><th>Ölçülecek</th><th class="n">Beklenen</th></tr></thead><tbody><tr><th>Eşdeğer direnç</th><td class="n">10 kΩ</td></tr><tr><th>Toplam akım</th><td class="n">4.5 mA</td></tr><tr><th>R1 → V / I</th><td class="n">22.5 V / 4.5 mA</td></tr><tr><th>R2 → V / I</th><td class="n">4.5 V / 1.5 mA</td></tr><tr><th>R3 → V / I</th><td class="n">4.5 V / 0.75 mA</td></tr><tr><th>R4 → V / I</th><td class="n">4.5 V / 2.25 mA</td></tr><tr><th>R5 → V / I</th><td class="n">18 V / 4.5 mA</td></tr></tbody></table><div class="yt"><span>YouTube video başlığı</span><b>5 Dirençli Seri-Paralel DC Devre Çözümü by ______________</b></div></div></section>
+<section id="s4"><div class="sh"><span class="badge">Seviye 4</span><h2>6 Dirençli Seri-Paralel DC Devre</h2><p class="topo">Sırayla: <strong>R1</strong> seri → <strong>R2 ∥ R3</strong> paralel → <strong>R4</strong> seri → <strong>R5 ∥ R6</strong> paralel. İki ayrı paralel grup, aralarında seri bir direnç ile bağlanmıştır.</p></div><div class="section-inner"><figure><figcaption>Devre şeması</figcaption><div class="sema"><svg class="devre" viewBox="0 0 758 284" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seviye 4 devre şeması"><line class="w" x1="124.0" y1="126.0" x2="163.0" y2="126.0"/><line class="w" x1="231.0" y1="126.0" x2="270.0" y2="126.0"/><rect class="rbox" x="163.0" y="113.0" width="68" height="26" rx="3"/><text class="rname" x="197.0" y="130.5">R1</text><text class="rval" x="197.0" y="105.0">1 kΩ</text><line class="w" x1="270.0" y1="126.0" x2="300.0" y2="126.0"/><line class="w" x1="386.0" y1="126.0" x2="416.0" y2="126.0"/><line class="w" x1="300.0" y1="83.0" x2="309.0" y2="83.0"/><line class="w" x1="377.0" y1="83.0" x2="386.0" y2="83.0"/><rect class="rbox" x="309.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="87.5">R2</text><text class="rval" x="343.0" y="62.0">8 kΩ</text><line class="w" x1="300.0" y1="169.0" x2="309.0" y2="169.0"/><line class="w" x1="377.0" y1="169.0" x2="386.0" y2="169.0"/><rect class="rbox" x="309.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="173.5">R3</text><text class="rval" x="343.0" y="148.0">8 kΩ</text><line class="w" x1="300.0" y1="83.0" x2="300.0" y2="169.0"/><line class="w" x1="386.0" y1="83.0" x2="386.0" y2="169.0"/><circle class="node" cx="300.0" cy="83.0" r="3.4"/><circle class="node" cx="386.0" cy="83.0" r="3.4"/><circle class="node" cx="300.0" cy="169.0" r="3.4"/><circle class="node" cx="386.0" cy="169.0" r="3.4"/><line class="w" x1="416.0" y1="126.0" x2="455.0" y2="126.0"/><line class="w" x1="523.0" y1="126.0" x2="562.0" y2="126.0"/><rect class="rbox" x="455.0" y="113.0" width="68" height="26" rx="3"/><text class="rname" x="489.0" y="130.5">R4</text><text class="rval" x="489.0" y="105.0">3 kΩ</text><line class="w" x1="562.0" y1="126.0" x2="592.0" y2="126.0"/><line class="w" x1="678.0" y1="126.0" x2="708.0" y2="126.0"/><line class="w" x1="592.0" y1="83.0" x2="601.0" y2="83.0"/><line class="w" x1="669.0" y1="83.0" x2="678.0" y2="83.0"/><rect class="rbox" x="601.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="635.0" y="87.5">R5</text><text class="rval" x="635.0" y="62.0">6 kΩ</text><line class="w" x1="592.0" y1="169.0" x2="601.0" y2="169.0"/><line class="w" x1="669.0" y1="169.0" x2="678.0" y2="169.0"/><rect class="rbox" x="601.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="635.0" y="173.5">R6</text><text class="rval" x="635.0" y="148.0">3 kΩ</text><line class="w" x1="592.0" y1="83.0" x2="592.0" y2="169.0"/><line class="w" x1="678.0" y1="83.0" x2="678.0" y2="169.0"/><circle class="node" cx="592.0" cy="83.0" r="3.4"/><circle class="node" cx="678.0" cy="83.0" r="3.4"/><circle class="node" cx="592.0" cy="169.0" r="3.4"/><circle class="node" cx="678.0" cy="169.0" r="3.4"/><polyline class="w" points="60.0,174.0 60.0,126.0 124.0,126.0"/><polyline class="w" points="708.0,126.0 728.0,126.0 728.0,254.0 60.0,254.0 60.0,206.0"/><line class="bat" x1="42.0" y1="181.0" x2="78.0" y2="181.0"/><line class="bat" x1="52.0" y1="187.0" x2="68.0" y2="187.0"/><line class="bat" x1="42.0" y1="193.0" x2="78.0" y2="193.0"/><line class="bat" x1="52.0" y1="199.0" x2="68.0" y2="199.0"/><text class="pm" x="32.0" y="185.0">+</text><text class="pm" x="32.0" y="206.0">−</text><text class="src" x="86.0" y="194.0">30 V</text></svg></div></figure><figcaption>Verilen değerler</figcaption><div class="verilen"><div class="vk kaynak"><span>KAYNAK V</span><b>30 V</b></div><div class="vk"><span>R1</span><b>1 kΩ</b></div><div class="vk"><span>R2</span><b>8 kΩ</b></div><div class="vk"><span>R3</span><b>8 kΩ</b></div><div class="vk"><span>R4</span><b>3 kΩ</b></div><div class="vk"><span>R5</span><b>6 kΩ</b></div><div class="vk"><span>R6</span><b>3 kΩ</b></div></div><div class="not"><b>Birim kuralı:</b> kΩ ve V kullanıldığı için V ÷ kΩ doğrudan <b>mA</b>, V × mA ise <b>mW</b> verir.</div><h3>1. Eşdeğer direnç — adım adım</h3><p class="topo">En içteki paralel gruptan başlanır, tek dirence indirgenir, sonra dışa doğru ilerlenir. Seri olanlar en sonda toplanır.</p><div class="adim"><span class="no">Adım 1</span><p class="form"><strong>R23 = (R2 · R3) / (R2 + R3)</strong>  (iki direnç paralel → çarpım/toplam)</p><ul class="hesap"><li>Çarpım: 8 · 8 = 64</li><li>Toplam: 8 + 8 = 16</li><li>R23 = 64 / 16 = <strong>4 kΩ</strong></li></ul></div><div class="adim"><span class="no">Adım 2</span><p class="form"><strong>R56 = (R5 · R6) / (R5 + R6)</strong>  (iki direnç paralel → çarpım/toplam)</p><ul class="hesap"><li>Çarpım: 6 · 3 = 18</li><li>Toplam: 6 + 3 = 9</li><li>R56 = 18 / 9 = <strong>2 kΩ</strong></li></ul></div><div class="adim"><span class="no">Adım 3</span><p class="form"><strong>R_eş = R1 + R23 + R4 + R56</strong>  (seri bağlı, doğrudan toplanır)</p><p class="form">R_eş = 1 + 4 + 3 + 2 = <strong>10 kΩ</strong></p></div><div class="sonuc">Eşdeğer direnç: <b>R_eş = 10 kΩ</b></div><h3>2. Toplam akım</h3><div class="sonuc">I_toplam = V ÷ R_eş = 30 ÷ 10 = <b>3 mA</b></div><h3>3. Çözülmüş devre</h3><figure><figcaption>Her direncin üzerindeki gerilim (<span style="color:var(--v)">turuncu</span>) ve akımı (<span style="color:var(--i)">yeşil</span>)</figcaption><div class="sema"><svg class="devre" viewBox="0 0 758 284" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seviye 4 çözüm şeması"><line class="w" x1="124.0" y1="126.0" x2="163.0" y2="126.0"/><line class="w" x1="231.0" y1="126.0" x2="270.0" y2="126.0"/><rect class="rbox" x="163.0" y="113.0" width="68" height="26" rx="3"/><text class="rname" x="197.0" y="130.5">R1</text><text class="rval" x="197.0" y="105.0">1 kΩ</text><text class="rvi" x="197.0" y="155.0"><tspan class="tv">3 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">3 mA</tspan></text><line class="w" x1="270.0" y1="126.0" x2="300.0" y2="126.0"/><line class="w" x1="386.0" y1="126.0" x2="416.0" y2="126.0"/><line class="w" x1="300.0" y1="83.0" x2="309.0" y2="83.0"/><line class="w" x1="377.0" y1="83.0" x2="386.0" y2="83.0"/><rect class="rbox" x="309.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="87.5">R2</text><text class="rval" x="343.0" y="62.0">8 kΩ</text><text class="rvi" x="343.0" y="112.0"><tspan class="tv">12 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">1.5 mA</tspan></text><line class="w" x1="300.0" y1="169.0" x2="309.0" y2="169.0"/><line class="w" x1="377.0" y1="169.0" x2="386.0" y2="169.0"/><rect class="rbox" x="309.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="173.5">R3</text><text class="rval" x="343.0" y="148.0">8 kΩ</text><text class="rvi" x="343.0" y="198.0"><tspan class="tv">12 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">1.5 mA</tspan></text><line class="w" x1="300.0" y1="83.0" x2="300.0" y2="169.0"/><line class="w" x1="386.0" y1="83.0" x2="386.0" y2="169.0"/><circle class="node" cx="300.0" cy="83.0" r="3.4"/><circle class="node" cx="386.0" cy="83.0" r="3.4"/><circle class="node" cx="300.0" cy="169.0" r="3.4"/><circle class="node" cx="386.0" cy="169.0" r="3.4"/><line class="w" x1="416.0" y1="126.0" x2="455.0" y2="126.0"/><line class="w" x1="523.0" y1="126.0" x2="562.0" y2="126.0"/><rect class="rbox" x="455.0" y="113.0" width="68" height="26" rx="3"/><text class="rname" x="489.0" y="130.5">R4</text><text class="rval" x="489.0" y="105.0">3 kΩ</text><text class="rvi" x="489.0" y="155.0"><tspan class="tv">9 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">3 mA</tspan></text><line class="w" x1="562.0" y1="126.0" x2="592.0" y2="126.0"/><line class="w" x1="678.0" y1="126.0" x2="708.0" y2="126.0"/><line class="w" x1="592.0" y1="83.0" x2="601.0" y2="83.0"/><line class="w" x1="669.0" y1="83.0" x2="678.0" y2="83.0"/><rect class="rbox" x="601.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="635.0" y="87.5">R5</text><text class="rval" x="635.0" y="62.0">6 kΩ</text><text class="rvi" x="635.0" y="112.0"><tspan class="tv">6 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">1 mA</tspan></text><line class="w" x1="592.0" y1="169.0" x2="601.0" y2="169.0"/><line class="w" x1="669.0" y1="169.0" x2="678.0" y2="169.0"/><rect class="rbox" x="601.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="635.0" y="173.5">R6</text><text class="rval" x="635.0" y="148.0">3 kΩ</text><text class="rvi" x="635.0" y="198.0"><tspan class="tv">6 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="592.0" y1="83.0" x2="592.0" y2="169.0"/><line class="w" x1="678.0" y1="83.0" x2="678.0" y2="169.0"/><circle class="node" cx="592.0" cy="83.0" r="3.4"/><circle class="node" cx="678.0" cy="83.0" r="3.4"/><circle class="node" cx="592.0" cy="169.0" r="3.4"/><circle class="node" cx="678.0" cy="169.0" r="3.4"/><polyline class="w" points="60.0,174.0 60.0,126.0 124.0,126.0"/><polyline class="w" points="708.0,126.0 728.0,126.0 728.0,254.0 60.0,254.0 60.0,206.0"/><line class="bat" x1="42.0" y1="181.0" x2="78.0" y2="181.0"/><line class="bat" x1="52.0" y1="187.0" x2="68.0" y2="187.0"/><line class="bat" x1="42.0" y1="193.0" x2="78.0" y2="193.0"/><line class="bat" x1="52.0" y1="199.0" x2="68.0" y2="199.0"/><text class="pm" x="32.0" y="185.0">+</text><text class="pm" x="32.0" y="206.0">−</text><text class="src" x="86.0" y="194.0">30 V</text></svg></div></figure><h3>4. Gerilim ve akım dağılımı</h3><p class="topo">Seri bağlı elemanlardan aynı akım geçer; paralel kolların uçlarındaki gerilim aynıdır.</p><ul class="dag"><li><strong>R1</strong> üzerinden 3 mA geçer → V_1 = I · R = 3 · 1 = <strong>3 V</strong></li><li><strong>R23</strong> grubunun uçlarındaki gerilim: V = I · R = 3 · 4 = <strong>12 V</strong></li><ul class="dag"><li>Bu paralel grubun her kolunda aynı <strong>12 V</strong> vardır:</li><ul class="dag"><li><strong>R2</strong>: I = V / R = 12 / 8 = <strong>1.5 mA</strong>  (gerilimi 12 V)</li><li><strong>R3</strong>: I = V / R = 12 / 8 = <strong>1.5 mA</strong>  (gerilimi 12 V)</li></ul></ul><li><strong>R4</strong> üzerinden 3 mA geçer → V_4 = I · R = 3 · 3 = <strong>9 V</strong></li><li><strong>R56</strong> grubunun uçlarındaki gerilim: V = I · R = 3 · 2 = <strong>6 V</strong></li><ul class="dag"><li>Bu paralel grubun her kolunda aynı <strong>6 V</strong> vardır:</li><ul class="dag"><li><strong>R5</strong>: I = V / R = 6 / 6 = <strong>1 mA</strong>  (gerilimi 6 V)</li><li><strong>R6</strong>: I = V / R = 6 / 3 = <strong>2 mA</strong>  (gerilimi 6 V)</li></ul></ul></ul><h3>5. Özet tablo</h3><table class="ozet"><thead><tr><th>Direnç</th><th class="n">R (kΩ)</th><th class="n">V (V)</th><th class="n">I (mA)</th><th class="n">P = V·I (mW)</th></tr></thead><tbody><tr><th>R1</th><td class="n">1</td><td class="n">3</td><td class="n">3</td><td class="n">9</td></tr><tr><th>R2</th><td class="n">8</td><td class="n">12</td><td class="n">1.5</td><td class="n">18</td></tr><tr><th>R3</th><td class="n">8</td><td class="n">12</td><td class="n">1.5</td><td class="n">18</td></tr><tr><th>R4</th><td class="n">3</td><td class="n">9</td><td class="n">3</td><td class="n">27</td></tr><tr><th>R5</th><td class="n">6</td><td class="n">6</td><td class="n">1</td><td class="n">6</td></tr><tr><th>R6</th><td class="n">3</td><td class="n">6</td><td class="n">2</td><td class="n">12</td></tr><tr><th>Toplam</th><td class="n">R_eş = 10</td><td class="n">30</td><td class="n">3</td><td class="n">90</td></tr></tbody></table><h3>6. Kontroller</h3><div class="kontrol"><h4>KVL — gerilim düşümleri toplamı</h4><ul><li>V(R1) + V(R23) + V(R4) + V(R56) = 3 + 12 + 9 + 6 = <strong>30 V</strong> = kaynak gerilimi 30 V ✔</li></ul></div><div class="kontrol"><h4>KCL — düğüm akımları toplamı</h4><ul><li>R23 düğümü: I(R2) + I(R3) = 1.5 + 1.5 = <strong>3 mA</strong> = gruba giren akım 3 mA ✔</li><li>R56 düğümü: I(R5) + I(R6) = 1 + 2 = <strong>3 mA</strong> = gruba giren akım 3 mA ✔</li></ul></div><div class="kontrol"><h4>Güç dengesi</h4><ul><li>Dirençlerin güçleri toplamı: <strong>90 mW</strong></li><li>Kaynağın verdiği güç: 30 · 3 = <strong>90 mW</strong></li><li>İkisi eşit ✔ — enerji korunumu sağlanıyor</li></ul></div><h3>7. Simülatörde beklenen değerler</h3><p class="topo">EveryCircuit / Proto gibi bir uygulamada devreyi kurunca ölçtüğünüz değerler bunlarla birebir aynı çıkmalı.</p><table><thead><tr><th>Ölçülecek</th><th class="n">Beklenen</th></tr></thead><tbody><tr><th>Eşdeğer direnç</th><td class="n">10 kΩ</td></tr><tr><th>Toplam akım</th><td class="n">3 mA</td></tr><tr><th>R1 → V / I</th><td class="n">3 V / 3 mA</td></tr><tr><th>R2 → V / I</th><td class="n">12 V / 1.5 mA</td></tr><tr><th>R3 → V / I</th><td class="n">12 V / 1.5 mA</td></tr><tr><th>R4 → V / I</th><td class="n">9 V / 3 mA</td></tr><tr><th>R5 → V / I</th><td class="n">6 V / 1 mA</td></tr><tr><th>R6 → V / I</th><td class="n">6 V / 2 mA</td></tr></tbody></table><div class="yt"><span>YouTube video başlığı</span><b>6 Dirençli Seri-Paralel DC Devre Çözümü by ______________</b></div></div></section>
+<section id="s5"><div class="sh"><span class="badge">Seviye 5</span><h2>7 Dirençli Seri-Paralel DC Devre</h2><p class="topo">Sırayla: <strong>R1</strong> seri → <strong>R2 ∥ R3 ∥ R4</strong> üçlü paralel → <strong>R5</strong> seri → <strong>R6 ∥ R7</strong> paralel.</p></div><div class="section-inner"><figure><figcaption>Devre şeması</figcaption><div class="sema"><svg class="devre" viewBox="0 0 758 370" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seviye 5 devre şeması"><line class="w" x1="124.0" y1="169.0" x2="163.0" y2="169.0"/><line class="w" x1="231.0" y1="169.0" x2="270.0" y2="169.0"/><rect class="rbox" x="163.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="197.0" y="173.5">R1</text><text class="rval" x="197.0" y="148.0">2 kΩ</text><line class="w" x1="270.0" y1="169.0" x2="300.0" y2="169.0"/><line class="w" x1="386.0" y1="169.0" x2="416.0" y2="169.0"/><line class="w" x1="300.0" y1="83.0" x2="309.0" y2="83.0"/><line class="w" x1="377.0" y1="83.0" x2="386.0" y2="83.0"/><rect class="rbox" x="309.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="87.5">R2</text><text class="rval" x="343.0" y="62.0">6 kΩ</text><line class="w" x1="300.0" y1="169.0" x2="309.0" y2="169.0"/><line class="w" x1="377.0" y1="169.0" x2="386.0" y2="169.0"/><rect class="rbox" x="309.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="173.5">R3</text><text class="rval" x="343.0" y="148.0">3 kΩ</text><line class="w" x1="300.0" y1="255.0" x2="309.0" y2="255.0"/><line class="w" x1="377.0" y1="255.0" x2="386.0" y2="255.0"/><rect class="rbox" x="309.0" y="242.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="259.5">R4</text><text class="rval" x="343.0" y="234.0">2 kΩ</text><line class="w" x1="300.0" y1="83.0" x2="300.0" y2="255.0"/><line class="w" x1="386.0" y1="83.0" x2="386.0" y2="255.0"/><circle class="node" cx="300.0" cy="83.0" r="3.4"/><circle class="node" cx="386.0" cy="83.0" r="3.4"/><circle class="node" cx="300.0" cy="169.0" r="3.4"/><circle class="node" cx="386.0" cy="169.0" r="3.4"/><circle class="node" cx="300.0" cy="255.0" r="3.4"/><circle class="node" cx="386.0" cy="255.0" r="3.4"/><line class="w" x1="416.0" y1="169.0" x2="455.0" y2="169.0"/><line class="w" x1="523.0" y1="169.0" x2="562.0" y2="169.0"/><rect class="rbox" x="455.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="489.0" y="173.5">R5</text><text class="rval" x="489.0" y="148.0">5 kΩ</text><line class="w" x1="562.0" y1="169.0" x2="592.0" y2="169.0"/><line class="w" x1="678.0" y1="169.0" x2="708.0" y2="169.0"/><line class="w" x1="592.0" y1="104.5" x2="601.0" y2="104.5"/><line class="w" x1="669.0" y1="104.5" x2="678.0" y2="104.5"/><rect class="rbox" x="601.0" y="91.5" width="68" height="26" rx="3"/><text class="rname" x="635.0" y="109.0">R6</text><text class="rval" x="635.0" y="83.5">4 kΩ</text><line class="w" x1="592.0" y1="233.5" x2="601.0" y2="233.5"/><line class="w" x1="669.0" y1="233.5" x2="678.0" y2="233.5"/><rect class="rbox" x="601.0" y="220.5" width="68" height="26" rx="3"/><text class="rname" x="635.0" y="238.0">R7</text><text class="rval" x="635.0" y="212.5">4 kΩ</text><line class="w" x1="592.0" y1="104.5" x2="592.0" y2="233.5"/><line class="w" x1="678.0" y1="104.5" x2="678.0" y2="233.5"/><circle class="node" cx="592.0" cy="104.5" r="3.4"/><circle class="node" cx="678.0" cy="104.5" r="3.4"/><circle class="node" cx="592.0" cy="233.5" r="3.4"/><circle class="node" cx="678.0" cy="233.5" r="3.4"/><polyline class="w" points="60.0,238.5 60.0,169.0 124.0,169.0"/><polyline class="w" points="708.0,169.0 728.0,169.0 728.0,340.0 60.0,340.0 60.0,270.5"/><line class="bat" x1="42.0" y1="245.5" x2="78.0" y2="245.5"/><line class="bat" x1="52.0" y1="251.5" x2="68.0" y2="251.5"/><line class="bat" x1="42.0" y1="257.5" x2="78.0" y2="257.5"/><line class="bat" x1="52.0" y1="263.5" x2="68.0" y2="263.5"/><text class="pm" x="32.0" y="249.5">+</text><text class="pm" x="32.0" y="270.5">−</text><text class="src" x="86.0" y="258.5">48 V</text></svg></div></figure><figcaption>Verilen değerler</figcaption><div class="verilen"><div class="vk kaynak"><span>KAYNAK V</span><b>48 V</b></div><div class="vk"><span>R1</span><b>2 kΩ</b></div><div class="vk"><span>R2</span><b>6 kΩ</b></div><div class="vk"><span>R3</span><b>3 kΩ</b></div><div class="vk"><span>R4</span><b>2 kΩ</b></div><div class="vk"><span>R5</span><b>5 kΩ</b></div><div class="vk"><span>R6</span><b>4 kΩ</b></div><div class="vk"><span>R7</span><b>4 kΩ</b></div></div><div class="not"><b>Birim kuralı:</b> kΩ ve V kullanıldığı için V ÷ kΩ doğrudan <b>mA</b>, V × mA ise <b>mW</b> verir.</div><h3>1. Eşdeğer direnç — adım adım</h3><p class="topo">En içteki paralel gruptan başlanır, tek dirence indirgenir, sonra dışa doğru ilerlenir. Seri olanlar en sonda toplanır.</p><div class="adim"><span class="no">Adım 1</span><p class="form"><strong>1/R234 = 1/R2 + 1/R3 + 1/R4</strong>  (ikiden fazla paralel → ters toplam)</p><ul class="hesap"><li>1/R234 = 1/6 + 1/3 + 1/2</li><li>1/R234 ≈ 0.16667 + 0.33333 + 0.5 = 1  (1/kΩ)</li><li>R234 = 1 / 1 = <strong>1 kΩ</strong></li></ul></div><div class="adim"><span class="no">Adım 2</span><p class="form"><strong>R67 = (R6 · R7) / (R6 + R7)</strong>  (iki direnç paralel → çarpım/toplam)</p><ul class="hesap"><li>Çarpım: 4 · 4 = 16</li><li>Toplam: 4 + 4 = 8</li><li>R67 = 16 / 8 = <strong>2 kΩ</strong></li></ul></div><div class="adim"><span class="no">Adım 3</span><p class="form"><strong>R_eş = R1 + R234 + R5 + R67</strong>  (seri bağlı, doğrudan toplanır)</p><p class="form">R_eş = 2 + 1 + 5 + 2 = <strong>10 kΩ</strong></p></div><div class="sonuc">Eşdeğer direnç: <b>R_eş = 10 kΩ</b></div><h3>2. Toplam akım</h3><div class="sonuc">I_toplam = V ÷ R_eş = 48 ÷ 10 = <b>4.8 mA</b></div><h3>3. Çözülmüş devre</h3><figure><figcaption>Her direncin üzerindeki gerilim (<span style="color:var(--v)">turuncu</span>) ve akımı (<span style="color:var(--i)">yeşil</span>)</figcaption><div class="sema"><svg class="devre" viewBox="0 0 758 370" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seviye 5 çözüm şeması"><line class="w" x1="124.0" y1="169.0" x2="163.0" y2="169.0"/><line class="w" x1="231.0" y1="169.0" x2="270.0" y2="169.0"/><rect class="rbox" x="163.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="197.0" y="173.5">R1</text><text class="rval" x="197.0" y="148.0">2 kΩ</text><text class="rvi" x="197.0" y="198.0"><tspan class="tv">9.6 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">4.8 mA</tspan></text><line class="w" x1="270.0" y1="169.0" x2="300.0" y2="169.0"/><line class="w" x1="386.0" y1="169.0" x2="416.0" y2="169.0"/><line class="w" x1="300.0" y1="83.0" x2="309.0" y2="83.0"/><line class="w" x1="377.0" y1="83.0" x2="386.0" y2="83.0"/><rect class="rbox" x="309.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="87.5">R2</text><text class="rval" x="343.0" y="62.0">6 kΩ</text><text class="rvi" x="343.0" y="112.0"><tspan class="tv">4.8 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">0.8 mA</tspan></text><line class="w" x1="300.0" y1="169.0" x2="309.0" y2="169.0"/><line class="w" x1="377.0" y1="169.0" x2="386.0" y2="169.0"/><rect class="rbox" x="309.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="173.5">R3</text><text class="rval" x="343.0" y="148.0">3 kΩ</text><text class="rvi" x="343.0" y="198.0"><tspan class="tv">4.8 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">1.6 mA</tspan></text><line class="w" x1="300.0" y1="255.0" x2="309.0" y2="255.0"/><line class="w" x1="377.0" y1="255.0" x2="386.0" y2="255.0"/><rect class="rbox" x="309.0" y="242.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="259.5">R4</text><text class="rval" x="343.0" y="234.0">2 kΩ</text><text class="rvi" x="343.0" y="284.0"><tspan class="tv">4.8 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2.4 mA</tspan></text><line class="w" x1="300.0" y1="83.0" x2="300.0" y2="255.0"/><line class="w" x1="386.0" y1="83.0" x2="386.0" y2="255.0"/><circle class="node" cx="300.0" cy="83.0" r="3.4"/><circle class="node" cx="386.0" cy="83.0" r="3.4"/><circle class="node" cx="300.0" cy="169.0" r="3.4"/><circle class="node" cx="386.0" cy="169.0" r="3.4"/><circle class="node" cx="300.0" cy="255.0" r="3.4"/><circle class="node" cx="386.0" cy="255.0" r="3.4"/><line class="w" x1="416.0" y1="169.0" x2="455.0" y2="169.0"/><line class="w" x1="523.0" y1="169.0" x2="562.0" y2="169.0"/><rect class="rbox" x="455.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="489.0" y="173.5">R5</text><text class="rval" x="489.0" y="148.0">5 kΩ</text><text class="rvi" x="489.0" y="198.0"><tspan class="tv">24 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">4.8 mA</tspan></text><line class="w" x1="562.0" y1="169.0" x2="592.0" y2="169.0"/><line class="w" x1="678.0" y1="169.0" x2="708.0" y2="169.0"/><line class="w" x1="592.0" y1="104.5" x2="601.0" y2="104.5"/><line class="w" x1="669.0" y1="104.5" x2="678.0" y2="104.5"/><rect class="rbox" x="601.0" y="91.5" width="68" height="26" rx="3"/><text class="rname" x="635.0" y="109.0">R6</text><text class="rval" x="635.0" y="83.5">4 kΩ</text><text class="rvi" x="635.0" y="133.5"><tspan class="tv">9.6 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2.4 mA</tspan></text><line class="w" x1="592.0" y1="233.5" x2="601.0" y2="233.5"/><line class="w" x1="669.0" y1="233.5" x2="678.0" y2="233.5"/><rect class="rbox" x="601.0" y="220.5" width="68" height="26" rx="3"/><text class="rname" x="635.0" y="238.0">R7</text><text class="rval" x="635.0" y="212.5">4 kΩ</text><text class="rvi" x="635.0" y="262.5"><tspan class="tv">9.6 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2.4 mA</tspan></text><line class="w" x1="592.0" y1="104.5" x2="592.0" y2="233.5"/><line class="w" x1="678.0" y1="104.5" x2="678.0" y2="233.5"/><circle class="node" cx="592.0" cy="104.5" r="3.4"/><circle class="node" cx="678.0" cy="104.5" r="3.4"/><circle class="node" cx="592.0" cy="233.5" r="3.4"/><circle class="node" cx="678.0" cy="233.5" r="3.4"/><polyline class="w" points="60.0,238.5 60.0,169.0 124.0,169.0"/><polyline class="w" points="708.0,169.0 728.0,169.0 728.0,340.0 60.0,340.0 60.0,270.5"/><line class="bat" x1="42.0" y1="245.5" x2="78.0" y2="245.5"/><line class="bat" x1="52.0" y1="251.5" x2="68.0" y2="251.5"/><line class="bat" x1="42.0" y1="257.5" x2="78.0" y2="257.5"/><line class="bat" x1="52.0" y1="263.5" x2="68.0" y2="263.5"/><text class="pm" x="32.0" y="249.5">+</text><text class="pm" x="32.0" y="270.5">−</text><text class="src" x="86.0" y="258.5">48 V</text></svg></div></figure><h3>4. Gerilim ve akım dağılımı</h3><p class="topo">Seri bağlı elemanlardan aynı akım geçer; paralel kolların uçlarındaki gerilim aynıdır.</p><ul class="dag"><li><strong>R1</strong> üzerinden 4.8 mA geçer → V_1 = I · R = 4.8 · 2 = <strong>9.6 V</strong></li><li><strong>R234</strong> grubunun uçlarındaki gerilim: V = I · R = 4.8 · 1 = <strong>4.8 V</strong></li><ul class="dag"><li>Bu paralel grubun her kolunda aynı <strong>4.8 V</strong> vardır:</li><ul class="dag"><li><strong>R2</strong>: I = V / R = 4.8 / 6 = <strong>0.8 mA</strong>  (gerilimi 4.8 V)</li><li><strong>R3</strong>: I = V / R = 4.8 / 3 = <strong>1.6 mA</strong>  (gerilimi 4.8 V)</li><li><strong>R4</strong>: I = V / R = 4.8 / 2 = <strong>2.4 mA</strong>  (gerilimi 4.8 V)</li></ul></ul><li><strong>R5</strong> üzerinden 4.8 mA geçer → V_5 = I · R = 4.8 · 5 = <strong>24 V</strong></li><li><strong>R67</strong> grubunun uçlarındaki gerilim: V = I · R = 4.8 · 2 = <strong>9.6 V</strong></li><ul class="dag"><li>Bu paralel grubun her kolunda aynı <strong>9.6 V</strong> vardır:</li><ul class="dag"><li><strong>R6</strong>: I = V / R = 9.6 / 4 = <strong>2.4 mA</strong>  (gerilimi 9.6 V)</li><li><strong>R7</strong>: I = V / R = 9.6 / 4 = <strong>2.4 mA</strong>  (gerilimi 9.6 V)</li></ul></ul></ul><h3>5. Özet tablo</h3><table class="ozet"><thead><tr><th>Direnç</th><th class="n">R (kΩ)</th><th class="n">V (V)</th><th class="n">I (mA)</th><th class="n">P = V·I (mW)</th></tr></thead><tbody><tr><th>R1</th><td class="n">2</td><td class="n">9.6</td><td class="n">4.8</td><td class="n">46.08</td></tr><tr><th>R2</th><td class="n">6</td><td class="n">4.8</td><td class="n">0.8</td><td class="n">3.84</td></tr><tr><th>R3</th><td class="n">3</td><td class="n">4.8</td><td class="n">1.6</td><td class="n">7.68</td></tr><tr><th>R4</th><td class="n">2</td><td class="n">4.8</td><td class="n">2.4</td><td class="n">11.52</td></tr><tr><th>R5</th><td class="n">5</td><td class="n">24</td><td class="n">4.8</td><td class="n">115.2</td></tr><tr><th>R6</th><td class="n">4</td><td class="n">9.6</td><td class="n">2.4</td><td class="n">23.04</td></tr><tr><th>R7</th><td class="n">4</td><td class="n">9.6</td><td class="n">2.4</td><td class="n">23.04</td></tr><tr><th>Toplam</th><td class="n">R_eş = 10</td><td class="n">48</td><td class="n">4.8</td><td class="n">230.4</td></tr></tbody></table><h3>6. Kontroller</h3><div class="kontrol"><h4>KVL — gerilim düşümleri toplamı</h4><ul><li>V(R1) + V(R234) + V(R5) + V(R67) = 9.6 + 4.8 + 24 + 9.6 = <strong>48 V</strong> = kaynak gerilimi 48 V ✔</li></ul></div><div class="kontrol"><h4>KCL — düğüm akımları toplamı</h4><ul><li>R234 düğümü: I(R2) + I(R3) + I(R4) = 0.8 + 1.6 + 2.4 = <strong>4.8 mA</strong> = gruba giren akım 4.8 mA ✔</li><li>R67 düğümü: I(R6) + I(R7) = 2.4 + 2.4 = <strong>4.8 mA</strong> = gruba giren akım 4.8 mA ✔</li></ul></div><div class="kontrol"><h4>Güç dengesi</h4><ul><li>Dirençlerin güçleri toplamı: <strong>230.4 mW</strong></li><li>Kaynağın verdiği güç: 48 · 4.8 = <strong>230.4 mW</strong></li><li>İkisi eşit ✔ — enerji korunumu sağlanıyor</li></ul></div><h3>7. Simülatörde beklenen değerler</h3><p class="topo">EveryCircuit / Proto gibi bir uygulamada devreyi kurunca ölçtüğünüz değerler bunlarla birebir aynı çıkmalı.</p><table><thead><tr><th>Ölçülecek</th><th class="n">Beklenen</th></tr></thead><tbody><tr><th>Eşdeğer direnç</th><td class="n">10 kΩ</td></tr><tr><th>Toplam akım</th><td class="n">4.8 mA</td></tr><tr><th>R1 → V / I</th><td class="n">9.6 V / 4.8 mA</td></tr><tr><th>R2 → V / I</th><td class="n">4.8 V / 0.8 mA</td></tr><tr><th>R3 → V / I</th><td class="n">4.8 V / 1.6 mA</td></tr><tr><th>R4 → V / I</th><td class="n">4.8 V / 2.4 mA</td></tr><tr><th>R5 → V / I</th><td class="n">24 V / 4.8 mA</td></tr><tr><th>R6 → V / I</th><td class="n">9.6 V / 2.4 mA</td></tr><tr><th>R7 → V / I</th><td class="n">9.6 V / 2.4 mA</td></tr></tbody></table><div class="yt"><span>YouTube video başlığı</span><b>7 Dirençli Seri-Paralel DC Devre Çözümü by ______________</b></div></div></section>
+<section id="s6"><div class="sh"><span class="badge">Seviye 6</span><h2>8 Dirençli Seri-Paralel DC Devre</h2><p class="topo">Serbest konfigürasyon. Sırayla: <strong>R1</strong> seri → birinci paralel grup (<strong>R2+R3 seri kolu</strong> ile <strong>R4</strong> paralel) → <strong>R5</strong> seri → ikinci paralel grup (<strong>R6</strong> ile <strong>R7+R8 seri kolu</strong> paralel). Burada paralel kolların <em>içinde</em> seri dirençler var; önce o kolların kendi toplamı bulunur, sonra paralel hesabı yapılır.</p></div><div class="section-inner"><figure><figcaption>Devre şeması</figcaption><div class="sema"><svg class="devre" viewBox="0 0 1050 284" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seviye 6 devre şeması"><line class="w" x1="124.0" y1="126.0" x2="163.0" y2="126.0"/><line class="w" x1="231.0" y1="126.0" x2="270.0" y2="126.0"/><rect class="rbox" x="163.0" y="113.0" width="68" height="26" rx="3"/><text class="rname" x="197.0" y="130.5">R1</text><text class="rval" x="197.0" y="105.0">4 kΩ</text><line class="w" x1="270.0" y1="126.0" x2="300.0" y2="126.0"/><line class="w" x1="532.0" y1="126.0" x2="562.0" y2="126.0"/><line class="w" x1="300.0" y1="83.0" x2="324.0" y2="83.0"/><line class="w" x1="392.0" y1="83.0" x2="416.0" y2="83.0"/><rect class="rbox" x="324.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="358.0" y="87.5">R2</text><text class="rval" x="358.0" y="62.0">3 kΩ</text><line class="w" x1="416.0" y1="83.0" x2="440.0" y2="83.0"/><line class="w" x1="508.0" y1="83.0" x2="532.0" y2="83.0"/><rect class="rbox" x="440.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="474.0" y="87.5">R3</text><text class="rval" x="474.0" y="62.0">5 kΩ</text><line class="w" x1="300.0" y1="169.0" x2="382.0" y2="169.0"/><line class="w" x1="450.0" y1="169.0" x2="532.0" y2="169.0"/><rect class="rbox" x="382.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="416.0" y="173.5">R4</text><text class="rval" x="416.0" y="148.0">8 kΩ</text><line class="w" x1="300.0" y1="83.0" x2="300.0" y2="169.0"/><line class="w" x1="532.0" y1="83.0" x2="532.0" y2="169.0"/><circle class="node" cx="300.0" cy="83.0" r="3.4"/><circle class="node" cx="532.0" cy="83.0" r="3.4"/><circle class="node" cx="300.0" cy="169.0" r="3.4"/><circle class="node" cx="532.0" cy="169.0" r="3.4"/><line class="w" x1="562.0" y1="126.0" x2="601.0" y2="126.0"/><line class="w" x1="669.0" y1="126.0" x2="708.0" y2="126.0"/><rect class="rbox" x="601.0" y="113.0" width="68" height="26" rx="3"/><text class="rname" x="635.0" y="130.5">R5</text><text class="rval" x="635.0" y="105.0">2 kΩ</text><line class="w" x1="708.0" y1="126.0" x2="738.0" y2="126.0"/><line class="w" x1="970.0" y1="126.0" x2="1000.0" y2="126.0"/><line class="w" x1="738.0" y1="83.0" x2="820.0" y2="83.0"/><line class="w" x1="888.0" y1="83.0" x2="970.0" y2="83.0"/><rect class="rbox" x="820.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="854.0" y="87.5">R6</text><text class="rval" x="854.0" y="62.0">6 kΩ</text><line class="w" x1="738.0" y1="169.0" x2="762.0" y2="169.0"/><line class="w" x1="830.0" y1="169.0" x2="854.0" y2="169.0"/><rect class="rbox" x="762.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="796.0" y="173.5">R7</text><text class="rval" x="796.0" y="148.0">1 kΩ</text><line class="w" x1="854.0" y1="169.0" x2="878.0" y2="169.0"/><line class="w" x1="946.0" y1="169.0" x2="970.0" y2="169.0"/><rect class="rbox" x="878.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="912.0" y="173.5">R8</text><text class="rval" x="912.0" y="148.0">5 kΩ</text><line class="w" x1="738.0" y1="83.0" x2="738.0" y2="169.0"/><line class="w" x1="970.0" y1="83.0" x2="970.0" y2="169.0"/><circle class="node" cx="738.0" cy="83.0" r="3.4"/><circle class="node" cx="970.0" cy="83.0" r="3.4"/><circle class="node" cx="738.0" cy="169.0" r="3.4"/><circle class="node" cx="970.0" cy="169.0" r="3.4"/><polyline class="w" points="60.0,174.0 60.0,126.0 124.0,126.0"/><polyline class="w" points="1000.0,126.0 1020.0,126.0 1020.0,254.0 60.0,254.0 60.0,206.0"/><line class="bat" x1="42.0" y1="181.0" x2="78.0" y2="181.0"/><line class="bat" x1="52.0" y1="187.0" x2="68.0" y2="187.0"/><line class="bat" x1="42.0" y1="193.0" x2="78.0" y2="193.0"/><line class="bat" x1="52.0" y1="199.0" x2="68.0" y2="199.0"/><text class="pm" x="32.0" y="185.0">+</text><text class="pm" x="32.0" y="206.0">−</text><text class="src" x="86.0" y="194.0">52 V</text></svg></div></figure><figcaption>Verilen değerler</figcaption><div class="verilen"><div class="vk kaynak"><span>KAYNAK V</span><b>52 V</b></div><div class="vk"><span>R1</span><b>4 kΩ</b></div><div class="vk"><span>R2</span><b>3 kΩ</b></div><div class="vk"><span>R3</span><b>5 kΩ</b></div><div class="vk"><span>R4</span><b>8 kΩ</b></div><div class="vk"><span>R5</span><b>2 kΩ</b></div><div class="vk"><span>R6</span><b>6 kΩ</b></div><div class="vk"><span>R7</span><b>1 kΩ</b></div><div class="vk"><span>R8</span><b>5 kΩ</b></div></div><div class="not"><b>Birim kuralı:</b> kΩ ve V kullanıldığı için V ÷ kΩ doğrudan <b>mA</b>, V × mA ise <b>mW</b> verir.</div><h3>1. Eşdeğer direnç — adım adım</h3><p class="topo">En içteki paralel gruptan başlanır, tek dirence indirgenir, sonra dışa doğru ilerlenir. Seri olanlar en sonda toplanır.</p><div class="adim"><span class="no">Adım 1</span><p class="form"><strong>R23 = R2 + R3</strong>  (seri bağlı, doğrudan toplanır)</p><p class="form">R23 = 3 + 5 = <strong>8 kΩ</strong></p></div><div class="adim"><span class="no">Adım 2</span><p class="form"><strong>RA = (R23 · R4) / (R23 + R4)</strong>  (iki direnç paralel → çarpım/toplam)</p><ul class="hesap"><li>Çarpım: 8 · 8 = 64</li><li>Toplam: 8 + 8 = 16</li><li>RA = 64 / 16 = <strong>4 kΩ</strong></li></ul></div><div class="adim"><span class="no">Adım 3</span><p class="form"><strong>R78 = R7 + R8</strong>  (seri bağlı, doğrudan toplanır)</p><p class="form">R78 = 1 + 5 = <strong>6 kΩ</strong></p></div><div class="adim"><span class="no">Adım 4</span><p class="form"><strong>RB = (R6 · R78) / (R6 + R78)</strong>  (iki direnç paralel → çarpım/toplam)</p><ul class="hesap"><li>Çarpım: 6 · 6 = 36</li><li>Toplam: 6 + 6 = 12</li><li>RB = 36 / 12 = <strong>3 kΩ</strong></li></ul></div><div class="adim"><span class="no">Adım 5</span><p class="form"><strong>R_eş = R1 + RA + R5 + RB</strong>  (seri bağlı, doğrudan toplanır)</p><p class="form">R_eş = 4 + 4 + 2 + 3 = <strong>13 kΩ</strong></p></div><div class="sonuc">Eşdeğer direnç: <b>R_eş = 13 kΩ</b></div><h3>2. Toplam akım</h3><div class="sonuc">I_toplam = V ÷ R_eş = 52 ÷ 13 = <b>4 mA</b></div><h3>3. Çözülmüş devre</h3><figure><figcaption>Her direncin üzerindeki gerilim (<span style="color:var(--v)">turuncu</span>) ve akımı (<span style="color:var(--i)">yeşil</span>)</figcaption><div class="sema"><svg class="devre" viewBox="0 0 1050 284" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seviye 6 çözüm şeması"><line class="w" x1="124.0" y1="126.0" x2="163.0" y2="126.0"/><line class="w" x1="231.0" y1="126.0" x2="270.0" y2="126.0"/><rect class="rbox" x="163.0" y="113.0" width="68" height="26" rx="3"/><text class="rname" x="197.0" y="130.5">R1</text><text class="rval" x="197.0" y="105.0">4 kΩ</text><text class="rvi" x="197.0" y="155.0"><tspan class="tv">16 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">4 mA</tspan></text><line class="w" x1="270.0" y1="126.0" x2="300.0" y2="126.0"/><line class="w" x1="532.0" y1="126.0" x2="562.0" y2="126.0"/><line class="w" x1="300.0" y1="83.0" x2="324.0" y2="83.0"/><line class="w" x1="392.0" y1="83.0" x2="416.0" y2="83.0"/><rect class="rbox" x="324.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="358.0" y="87.5">R2</text><text class="rval" x="358.0" y="62.0">3 kΩ</text><text class="rvi" x="358.0" y="112.0"><tspan class="tv">6 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="416.0" y1="83.0" x2="440.0" y2="83.0"/><line class="w" x1="508.0" y1="83.0" x2="532.0" y2="83.0"/><rect class="rbox" x="440.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="474.0" y="87.5">R3</text><text class="rval" x="474.0" y="62.0">5 kΩ</text><text class="rvi" x="474.0" y="112.0"><tspan class="tv">10 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="300.0" y1="169.0" x2="382.0" y2="169.0"/><line class="w" x1="450.0" y1="169.0" x2="532.0" y2="169.0"/><rect class="rbox" x="382.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="416.0" y="173.5">R4</text><text class="rval" x="416.0" y="148.0">8 kΩ</text><text class="rvi" x="416.0" y="198.0"><tspan class="tv">16 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="300.0" y1="83.0" x2="300.0" y2="169.0"/><line class="w" x1="532.0" y1="83.0" x2="532.0" y2="169.0"/><circle class="node" cx="300.0" cy="83.0" r="3.4"/><circle class="node" cx="532.0" cy="83.0" r="3.4"/><circle class="node" cx="300.0" cy="169.0" r="3.4"/><circle class="node" cx="532.0" cy="169.0" r="3.4"/><line class="w" x1="562.0" y1="126.0" x2="601.0" y2="126.0"/><line class="w" x1="669.0" y1="126.0" x2="708.0" y2="126.0"/><rect class="rbox" x="601.0" y="113.0" width="68" height="26" rx="3"/><text class="rname" x="635.0" y="130.5">R5</text><text class="rval" x="635.0" y="105.0">2 kΩ</text><text class="rvi" x="635.0" y="155.0"><tspan class="tv">8 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">4 mA</tspan></text><line class="w" x1="708.0" y1="126.0" x2="738.0" y2="126.0"/><line class="w" x1="970.0" y1="126.0" x2="1000.0" y2="126.0"/><line class="w" x1="738.0" y1="83.0" x2="820.0" y2="83.0"/><line class="w" x1="888.0" y1="83.0" x2="970.0" y2="83.0"/><rect class="rbox" x="820.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="854.0" y="87.5">R6</text><text class="rval" x="854.0" y="62.0">6 kΩ</text><text class="rvi" x="854.0" y="112.0"><tspan class="tv">12 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="738.0" y1="169.0" x2="762.0" y2="169.0"/><line class="w" x1="830.0" y1="169.0" x2="854.0" y2="169.0"/><rect class="rbox" x="762.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="796.0" y="173.5">R7</text><text class="rval" x="796.0" y="148.0">1 kΩ</text><text class="rvi" x="796.0" y="198.0"><tspan class="tv">2 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="854.0" y1="169.0" x2="878.0" y2="169.0"/><line class="w" x1="946.0" y1="169.0" x2="970.0" y2="169.0"/><rect class="rbox" x="878.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="912.0" y="173.5">R8</text><text class="rval" x="912.0" y="148.0">5 kΩ</text><text class="rvi" x="912.0" y="198.0"><tspan class="tv">10 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="738.0" y1="83.0" x2="738.0" y2="169.0"/><line class="w" x1="970.0" y1="83.0" x2="970.0" y2="169.0"/><circle class="node" cx="738.0" cy="83.0" r="3.4"/><circle class="node" cx="970.0" cy="83.0" r="3.4"/><circle class="node" cx="738.0" cy="169.0" r="3.4"/><circle class="node" cx="970.0" cy="169.0" r="3.4"/><polyline class="w" points="60.0,174.0 60.0,126.0 124.0,126.0"/><polyline class="w" points="1000.0,126.0 1020.0,126.0 1020.0,254.0 60.0,254.0 60.0,206.0"/><line class="bat" x1="42.0" y1="181.0" x2="78.0" y2="181.0"/><line class="bat" x1="52.0" y1="187.0" x2="68.0" y2="187.0"/><line class="bat" x1="42.0" y1="193.0" x2="78.0" y2="193.0"/><line class="bat" x1="52.0" y1="199.0" x2="68.0" y2="199.0"/><text class="pm" x="32.0" y="185.0">+</text><text class="pm" x="32.0" y="206.0">−</text><text class="src" x="86.0" y="194.0">52 V</text></svg></div></figure><h3>4. Gerilim ve akım dağılımı</h3><p class="topo">Seri bağlı elemanlardan aynı akım geçer; paralel kolların uçlarındaki gerilim aynıdır.</p><ul class="dag"><li><strong>R1</strong> üzerinden 4 mA geçer → V_1 = I · R = 4 · 4 = <strong>16 V</strong></li><li><strong>RA</strong> grubunun uçlarındaki gerilim: V = I · R = 4 · 4 = <strong>16 V</strong></li><ul class="dag"><li>Bu paralel grubun her kolunda aynı <strong>16 V</strong> vardır:</li><ul class="dag"><li><strong>R23</strong> kolu: I = V / R = 16 / 8 = <strong>2 mA</strong></li><ul class="dag"><li><strong>R2</strong> üzerinden 2 mA geçer → V_2 = I · R = 2 · 3 = <strong>6 V</strong></li><li><strong>R3</strong> üzerinden 2 mA geçer → V_3 = I · R = 2 · 5 = <strong>10 V</strong></li></ul><li><strong>R4</strong>: I = V / R = 16 / 8 = <strong>2 mA</strong>  (gerilimi 16 V)</li></ul></ul><li><strong>R5</strong> üzerinden 4 mA geçer → V_5 = I · R = 4 · 2 = <strong>8 V</strong></li><li><strong>RB</strong> grubunun uçlarındaki gerilim: V = I · R = 4 · 3 = <strong>12 V</strong></li><ul class="dag"><li>Bu paralel grubun her kolunda aynı <strong>12 V</strong> vardır:</li><ul class="dag"><li><strong>R6</strong>: I = V / R = 12 / 6 = <strong>2 mA</strong>  (gerilimi 12 V)</li><li><strong>R78</strong> kolu: I = V / R = 12 / 6 = <strong>2 mA</strong></li><ul class="dag"><li><strong>R7</strong> üzerinden 2 mA geçer → V_7 = I · R = 2 · 1 = <strong>2 V</strong></li><li><strong>R8</strong> üzerinden 2 mA geçer → V_8 = I · R = 2 · 5 = <strong>10 V</strong></li></ul></ul></ul></ul><h3>5. Özet tablo</h3><table class="ozet"><thead><tr><th>Direnç</th><th class="n">R (kΩ)</th><th class="n">V (V)</th><th class="n">I (mA)</th><th class="n">P = V·I (mW)</th></tr></thead><tbody><tr><th>R1</th><td class="n">4</td><td class="n">16</td><td class="n">4</td><td class="n">64</td></tr><tr><th>R2</th><td class="n">3</td><td class="n">6</td><td class="n">2</td><td class="n">12</td></tr><tr><th>R3</th><td class="n">5</td><td class="n">10</td><td class="n">2</td><td class="n">20</td></tr><tr><th>R4</th><td class="n">8</td><td class="n">16</td><td class="n">2</td><td class="n">32</td></tr><tr><th>R5</th><td class="n">2</td><td class="n">8</td><td class="n">4</td><td class="n">32</td></tr><tr><th>R6</th><td class="n">6</td><td class="n">12</td><td class="n">2</td><td class="n">24</td></tr><tr><th>R7</th><td class="n">1</td><td class="n">2</td><td class="n">2</td><td class="n">4</td></tr><tr><th>R8</th><td class="n">5</td><td class="n">10</td><td class="n">2</td><td class="n">20</td></tr><tr><th>Toplam</th><td class="n">R_eş = 13</td><td class="n">52</td><td class="n">4</td><td class="n">208</td></tr></tbody></table><h3>6. Kontroller</h3><div class="kontrol"><h4>KVL — gerilim düşümleri toplamı</h4><ul><li>V(R1) + V(RA) + V(R5) + V(RB) = 16 + 16 + 8 + 12 = <strong>52 V</strong> = kaynak gerilimi 52 V ✔</li><li>V(R2) + V(R3) = 6 + 10 = <strong>16 V</strong> = kolun gerilimi 16 V ✔</li><li>V(R7) + V(R8) = 2 + 10 = <strong>12 V</strong> = kolun gerilimi 12 V ✔</li></ul></div><div class="kontrol"><h4>KCL — düğüm akımları toplamı</h4><ul><li>RA düğümü: I(R23) + I(R4) = 2 + 2 = <strong>4 mA</strong> = gruba giren akım 4 mA ✔</li><li>RB düğümü: I(R6) + I(R78) = 2 + 2 = <strong>4 mA</strong> = gruba giren akım 4 mA ✔</li></ul></div><div class="kontrol"><h4>Güç dengesi</h4><ul><li>Dirençlerin güçleri toplamı: <strong>208 mW</strong></li><li>Kaynağın verdiği güç: 52 · 4 = <strong>208 mW</strong></li><li>İkisi eşit ✔ — enerji korunumu sağlanıyor</li></ul></div><h3>7. Simülatörde beklenen değerler</h3><p class="topo">EveryCircuit / Proto gibi bir uygulamada devreyi kurunca ölçtüğünüz değerler bunlarla birebir aynı çıkmalı.</p><table><thead><tr><th>Ölçülecek</th><th class="n">Beklenen</th></tr></thead><tbody><tr><th>Eşdeğer direnç</th><td class="n">13 kΩ</td></tr><tr><th>Toplam akım</th><td class="n">4 mA</td></tr><tr><th>R1 → V / I</th><td class="n">16 V / 4 mA</td></tr><tr><th>R2 → V / I</th><td class="n">6 V / 2 mA</td></tr><tr><th>R3 → V / I</th><td class="n">10 V / 2 mA</td></tr><tr><th>R4 → V / I</th><td class="n">16 V / 2 mA</td></tr><tr><th>R5 → V / I</th><td class="n">8 V / 4 mA</td></tr><tr><th>R6 → V / I</th><td class="n">12 V / 2 mA</td></tr><tr><th>R7 → V / I</th><td class="n">2 V / 2 mA</td></tr><tr><th>R8 → V / I</th><td class="n">10 V / 2 mA</td></tr></tbody></table><div class="yt"><span>YouTube video başlığı</span><b>8 Dirençli Seri-Paralel DC Devre Çözümü by ______________</b></div></div></section>
+<section id="s7"><div class="sh"><span class="badge">Seviye 7</span><h2>9 Dirençli Seri-Paralel DC Devre</h2><p class="topo">Serbest konfigürasyon, <strong>iç içe (nested)</strong> yapı. Sırayla: <strong>R1</strong> seri → bir paralel grup; bu grubun üst kolu <strong>R2 ile (R3 ∥ R4)</strong>'ün serisi, alt kolu tek başına <strong>R5</strong> → <strong>R6</strong> seri → <strong>R7 ∥ R8 ∥ R9</strong> üçlü paralel. En içteki R3 ∥ R4 ikilisinden başlanır.</p></div><div class="section-inner"><figure><figcaption>Devre şeması</figcaption><div class="sema"><svg class="devre" viewBox="0 0 904 370" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seviye 7 devre şeması"><line class="w" x1="124.0" y1="169.0" x2="163.0" y2="169.0"/><line class="w" x1="231.0" y1="169.0" x2="270.0" y2="169.0"/><rect class="rbox" x="163.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="197.0" y="173.5">R1</text><text class="rval" x="197.0" y="148.0">3 kΩ</text><line class="w" x1="270.0" y1="169.0" x2="300.0" y2="169.0"/><line class="w" x1="532.0" y1="169.0" x2="562.0" y2="169.0"/><line class="w" x1="300.0" y1="126.0" x2="324.0" y2="126.0"/><line class="w" x1="392.0" y1="126.0" x2="416.0" y2="126.0"/><rect class="rbox" x="324.0" y="113.0" width="68" height="26" rx="3"/><text class="rname" x="358.0" y="130.5">R2</text><text class="rval" x="358.0" y="105.0">5 kΩ</text><line class="w" x1="416.0" y1="126.0" x2="446.0" y2="126.0"/><line class="w" x1="502.0" y1="126.0" x2="532.0" y2="126.0"/><line class="w" x1="446.0" y1="83.0" x2="440.0" y2="83.0"/><line class="w" x1="508.0" y1="83.0" x2="502.0" y2="83.0"/><rect class="rbox" x="440.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="474.0" y="87.5">R3</text><text class="rval" x="474.0" y="62.0">4 kΩ</text><line class="w" x1="446.0" y1="169.0" x2="440.0" y2="169.0"/><line class="w" x1="508.0" y1="169.0" x2="502.0" y2="169.0"/><rect class="rbox" x="440.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="474.0" y="173.5">R4</text><text class="rval" x="474.0" y="148.0">4 kΩ</text><line class="w" x1="446.0" y1="83.0" x2="446.0" y2="169.0"/><line class="w" x1="502.0" y1="83.0" x2="502.0" y2="169.0"/><circle class="node" cx="446.0" cy="83.0" r="3.4"/><circle class="node" cx="502.0" cy="83.0" r="3.4"/><circle class="node" cx="446.0" cy="169.0" r="3.4"/><circle class="node" cx="502.0" cy="169.0" r="3.4"/><line class="w" x1="300.0" y1="255.0" x2="382.0" y2="255.0"/><line class="w" x1="450.0" y1="255.0" x2="532.0" y2="255.0"/><rect class="rbox" x="382.0" y="242.0" width="68" height="26" rx="3"/><text class="rname" x="416.0" y="259.5">R5</text><text class="rval" x="416.0" y="234.0">7 kΩ</text><line class="w" x1="300.0" y1="126.0" x2="300.0" y2="255.0"/><line class="w" x1="532.0" y1="126.0" x2="532.0" y2="255.0"/><circle class="node" cx="300.0" cy="126.0" r="3.4"/><circle class="node" cx="532.0" cy="126.0" r="3.4"/><circle class="node" cx="300.0" cy="255.0" r="3.4"/><circle class="node" cx="532.0" cy="255.0" r="3.4"/><line class="w" x1="562.0" y1="169.0" x2="601.0" y2="169.0"/><line class="w" x1="669.0" y1="169.0" x2="708.0" y2="169.0"/><rect class="rbox" x="601.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="635.0" y="173.5">R6</text><text class="rval" x="635.0" y="148.0">6 kΩ</text><line class="w" x1="708.0" y1="169.0" x2="738.0" y2="169.0"/><line class="w" x1="824.0" y1="169.0" x2="854.0" y2="169.0"/><line class="w" x1="738.0" y1="83.0" x2="747.0" y2="83.0"/><line class="w" x1="815.0" y1="83.0" x2="824.0" y2="83.0"/><rect class="rbox" x="747.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="781.0" y="87.5">R7</text><text class="rval" x="781.0" y="62.0">10 kΩ</text><line class="w" x1="738.0" y1="169.0" x2="747.0" y2="169.0"/><line class="w" x1="815.0" y1="169.0" x2="824.0" y2="169.0"/><rect class="rbox" x="747.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="781.0" y="173.5">R8</text><text class="rval" x="781.0" y="148.0">10 kΩ</text><line class="w" x1="738.0" y1="255.0" x2="747.0" y2="255.0"/><line class="w" x1="815.0" y1="255.0" x2="824.0" y2="255.0"/><rect class="rbox" x="747.0" y="242.0" width="68" height="26" rx="3"/><text class="rname" x="781.0" y="259.5">R9</text><text class="rval" x="781.0" y="234.0">5 kΩ</text><line class="w" x1="738.0" y1="83.0" x2="738.0" y2="255.0"/><line class="w" x1="824.0" y1="83.0" x2="824.0" y2="255.0"/><circle class="node" cx="738.0" cy="83.0" r="3.4"/><circle class="node" cx="824.0" cy="83.0" r="3.4"/><circle class="node" cx="738.0" cy="169.0" r="3.4"/><circle class="node" cx="824.0" cy="169.0" r="3.4"/><circle class="node" cx="738.0" cy="255.0" r="3.4"/><circle class="node" cx="824.0" cy="255.0" r="3.4"/><polyline class="w" points="60.0,238.5 60.0,169.0 124.0,169.0"/><polyline class="w" points="854.0,169.0 874.0,169.0 874.0,340.0 60.0,340.0 60.0,270.5"/><line class="bat" x1="42.0" y1="245.5" x2="78.0" y2="245.5"/><line class="bat" x1="52.0" y1="251.5" x2="68.0" y2="251.5"/><line class="bat" x1="42.0" y1="257.5" x2="78.0" y2="257.5"/><line class="bat" x1="52.0" y1="263.5" x2="68.0" y2="263.5"/><text class="pm" x="32.0" y="249.5">+</text><text class="pm" x="32.0" y="270.5">−</text><text class="src" x="86.0" y="258.5">60 V</text></svg></div></figure><figcaption>Verilen değerler</figcaption><div class="verilen"><div class="vk kaynak"><span>KAYNAK V</span><b>60 V</b></div><div class="vk"><span>R1</span><b>3 kΩ</b></div><div class="vk"><span>R2</span><b>5 kΩ</b></div><div class="vk"><span>R3</span><b>4 kΩ</b></div><div class="vk"><span>R4</span><b>4 kΩ</b></div><div class="vk"><span>R5</span><b>7 kΩ</b></div><div class="vk"><span>R6</span><b>6 kΩ</b></div><div class="vk"><span>R7</span><b>10 kΩ</b></div><div class="vk"><span>R8</span><b>10 kΩ</b></div><div class="vk"><span>R9</span><b>5 kΩ</b></div></div><div class="not"><b>Birim kuralı:</b> kΩ ve V kullanıldığı için V ÷ kΩ doğrudan <b>mA</b>, V × mA ise <b>mW</b> verir.</div><h3>1. Eşdeğer direnç — adım adım</h3><p class="topo">En içteki paralel gruptan başlanır, tek dirence indirgenir, sonra dışa doğru ilerlenir. Seri olanlar en sonda toplanır.</p><div class="adim"><span class="no">Adım 1</span><p class="form"><strong>R34 = (R3 · R4) / (R3 + R4)</strong>  (iki direnç paralel → çarpım/toplam)</p><ul class="hesap"><li>Çarpım: 4 · 4 = 16</li><li>Toplam: 4 + 4 = 8</li><li>R34 = 16 / 8 = <strong>2 kΩ</strong></li></ul></div><div class="adim"><span class="no">Adım 2</span><p class="form"><strong>RA = R2 + R34</strong>  (seri bağlı, doğrudan toplanır)</p><p class="form">RA = 5 + 2 = <strong>7 kΩ</strong></p></div><div class="adim"><span class="no">Adım 3</span><p class="form"><strong>RB = (RA · R5) / (RA + R5)</strong>  (iki direnç paralel → çarpım/toplam)</p><ul class="hesap"><li>Çarpım: 7 · 7 = 49</li><li>Toplam: 7 + 7 = 14</li><li>RB = 49 / 14 = <strong>3.5 kΩ</strong></li></ul></div><div class="adim"><span class="no">Adım 4</span><p class="form"><strong>1/R789 = 1/R7 + 1/R8 + 1/R9</strong>  (ikiden fazla paralel → ters toplam)</p><ul class="hesap"><li>1/R789 = 1/10 + 1/10 + 1/5</li><li>1/R789 ≈ 0.1 + 0.1 + 0.2 = 0.4  (1/kΩ)</li><li>R789 = 1 / 0.4 = <strong>2.5 kΩ</strong></li></ul></div><div class="adim"><span class="no">Adım 5</span><p class="form"><strong>R_eş = R1 + RB + R6 + R789</strong>  (seri bağlı, doğrudan toplanır)</p><p class="form">R_eş = 3 + 3.5 + 6 + 2.5 = <strong>15 kΩ</strong></p></div><div class="sonuc">Eşdeğer direnç: <b>R_eş = 15 kΩ</b></div><h3>2. Toplam akım</h3><div class="sonuc">I_toplam = V ÷ R_eş = 60 ÷ 15 = <b>4 mA</b></div><h3>3. Çözülmüş devre</h3><figure><figcaption>Her direncin üzerindeki gerilim (<span style="color:var(--v)">turuncu</span>) ve akımı (<span style="color:var(--i)">yeşil</span>)</figcaption><div class="sema"><svg class="devre" viewBox="0 0 904 370" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seviye 7 çözüm şeması"><line class="w" x1="124.0" y1="169.0" x2="163.0" y2="169.0"/><line class="w" x1="231.0" y1="169.0" x2="270.0" y2="169.0"/><rect class="rbox" x="163.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="197.0" y="173.5">R1</text><text class="rval" x="197.0" y="148.0">3 kΩ</text><text class="rvi" x="197.0" y="198.0"><tspan class="tv">12 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">4 mA</tspan></text><line class="w" x1="270.0" y1="169.0" x2="300.0" y2="169.0"/><line class="w" x1="532.0" y1="169.0" x2="562.0" y2="169.0"/><line class="w" x1="300.0" y1="126.0" x2="324.0" y2="126.0"/><line class="w" x1="392.0" y1="126.0" x2="416.0" y2="126.0"/><rect class="rbox" x="324.0" y="113.0" width="68" height="26" rx="3"/><text class="rname" x="358.0" y="130.5">R2</text><text class="rval" x="358.0" y="105.0">5 kΩ</text><text class="rvi" x="358.0" y="155.0"><tspan class="tv">10 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="416.0" y1="126.0" x2="446.0" y2="126.0"/><line class="w" x1="502.0" y1="126.0" x2="532.0" y2="126.0"/><line class="w" x1="446.0" y1="83.0" x2="440.0" y2="83.0"/><line class="w" x1="508.0" y1="83.0" x2="502.0" y2="83.0"/><rect class="rbox" x="440.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="474.0" y="87.5">R3</text><text class="rval" x="474.0" y="62.0">4 kΩ</text><text class="rvi" x="474.0" y="112.0"><tspan class="tv">4 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">1 mA</tspan></text><line class="w" x1="446.0" y1="169.0" x2="440.0" y2="169.0"/><line class="w" x1="508.0" y1="169.0" x2="502.0" y2="169.0"/><rect class="rbox" x="440.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="474.0" y="173.5">R4</text><text class="rval" x="474.0" y="148.0">4 kΩ</text><text class="rvi" x="474.0" y="198.0"><tspan class="tv">4 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">1 mA</tspan></text><line class="w" x1="446.0" y1="83.0" x2="446.0" y2="169.0"/><line class="w" x1="502.0" y1="83.0" x2="502.0" y2="169.0"/><circle class="node" cx="446.0" cy="83.0" r="3.4"/><circle class="node" cx="502.0" cy="83.0" r="3.4"/><circle class="node" cx="446.0" cy="169.0" r="3.4"/><circle class="node" cx="502.0" cy="169.0" r="3.4"/><line class="w" x1="300.0" y1="255.0" x2="382.0" y2="255.0"/><line class="w" x1="450.0" y1="255.0" x2="532.0" y2="255.0"/><rect class="rbox" x="382.0" y="242.0" width="68" height="26" rx="3"/><text class="rname" x="416.0" y="259.5">R5</text><text class="rval" x="416.0" y="234.0">7 kΩ</text><text class="rvi" x="416.0" y="284.0"><tspan class="tv">14 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="300.0" y1="126.0" x2="300.0" y2="255.0"/><line class="w" x1="532.0" y1="126.0" x2="532.0" y2="255.0"/><circle class="node" cx="300.0" cy="126.0" r="3.4"/><circle class="node" cx="532.0" cy="126.0" r="3.4"/><circle class="node" cx="300.0" cy="255.0" r="3.4"/><circle class="node" cx="532.0" cy="255.0" r="3.4"/><line class="w" x1="562.0" y1="169.0" x2="601.0" y2="169.0"/><line class="w" x1="669.0" y1="169.0" x2="708.0" y2="169.0"/><rect class="rbox" x="601.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="635.0" y="173.5">R6</text><text class="rval" x="635.0" y="148.0">6 kΩ</text><text class="rvi" x="635.0" y="198.0"><tspan class="tv">24 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">4 mA</tspan></text><line class="w" x1="708.0" y1="169.0" x2="738.0" y2="169.0"/><line class="w" x1="824.0" y1="169.0" x2="854.0" y2="169.0"/><line class="w" x1="738.0" y1="83.0" x2="747.0" y2="83.0"/><line class="w" x1="815.0" y1="83.0" x2="824.0" y2="83.0"/><rect class="rbox" x="747.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="781.0" y="87.5">R7</text><text class="rval" x="781.0" y="62.0">10 kΩ</text><text class="rvi" x="781.0" y="112.0"><tspan class="tv">10 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">1 mA</tspan></text><line class="w" x1="738.0" y1="169.0" x2="747.0" y2="169.0"/><line class="w" x1="815.0" y1="169.0" x2="824.0" y2="169.0"/><rect class="rbox" x="747.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="781.0" y="173.5">R8</text><text class="rval" x="781.0" y="148.0">10 kΩ</text><text class="rvi" x="781.0" y="198.0"><tspan class="tv">10 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">1 mA</tspan></text><line class="w" x1="738.0" y1="255.0" x2="747.0" y2="255.0"/><line class="w" x1="815.0" y1="255.0" x2="824.0" y2="255.0"/><rect class="rbox" x="747.0" y="242.0" width="68" height="26" rx="3"/><text class="rname" x="781.0" y="259.5">R9</text><text class="rval" x="781.0" y="234.0">5 kΩ</text><text class="rvi" x="781.0" y="284.0"><tspan class="tv">10 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="738.0" y1="83.0" x2="738.0" y2="255.0"/><line class="w" x1="824.0" y1="83.0" x2="824.0" y2="255.0"/><circle class="node" cx="738.0" cy="83.0" r="3.4"/><circle class="node" cx="824.0" cy="83.0" r="3.4"/><circle class="node" cx="738.0" cy="169.0" r="3.4"/><circle class="node" cx="824.0" cy="169.0" r="3.4"/><circle class="node" cx="738.0" cy="255.0" r="3.4"/><circle class="node" cx="824.0" cy="255.0" r="3.4"/><polyline class="w" points="60.0,238.5 60.0,169.0 124.0,169.0"/><polyline class="w" points="854.0,169.0 874.0,169.0 874.0,340.0 60.0,340.0 60.0,270.5"/><line class="bat" x1="42.0" y1="245.5" x2="78.0" y2="245.5"/><line class="bat" x1="52.0" y1="251.5" x2="68.0" y2="251.5"/><line class="bat" x1="42.0" y1="257.5" x2="78.0" y2="257.5"/><line class="bat" x1="52.0" y1="263.5" x2="68.0" y2="263.5"/><text class="pm" x="32.0" y="249.5">+</text><text class="pm" x="32.0" y="270.5">−</text><text class="src" x="86.0" y="258.5">60 V</text></svg></div></figure><h3>4. Gerilim ve akım dağılımı</h3><p class="topo">Seri bağlı elemanlardan aynı akım geçer; paralel kolların uçlarındaki gerilim aynıdır.</p><ul class="dag"><li><strong>R1</strong> üzerinden 4 mA geçer → V_1 = I · R = 4 · 3 = <strong>12 V</strong></li><li><strong>RB</strong> grubunun uçlarındaki gerilim: V = I · R = 4 · 3.5 = <strong>14 V</strong></li><ul class="dag"><li>Bu paralel grubun her kolunda aynı <strong>14 V</strong> vardır:</li><ul class="dag"><li><strong>RA</strong> kolu: I = V / R = 14 / 7 = <strong>2 mA</strong></li><ul class="dag"><li><strong>R2</strong> üzerinden 2 mA geçer → V_2 = I · R = 2 · 5 = <strong>10 V</strong></li><li><strong>R34</strong> grubunun uçlarındaki gerilim: V = I · R = 2 · 2 = <strong>4 V</strong></li><ul class="dag"><li>Bu paralel grubun her kolunda aynı <strong>4 V</strong> vardır:</li><ul class="dag"><li><strong>R3</strong>: I = V / R = 4 / 4 = <strong>1 mA</strong>  (gerilimi 4 V)</li><li><strong>R4</strong>: I = V / R = 4 / 4 = <strong>1 mA</strong>  (gerilimi 4 V)</li></ul></ul></ul><li><strong>R5</strong>: I = V / R = 14 / 7 = <strong>2 mA</strong>  (gerilimi 14 V)</li></ul></ul><li><strong>R6</strong> üzerinden 4 mA geçer → V_6 = I · R = 4 · 6 = <strong>24 V</strong></li><li><strong>R789</strong> grubunun uçlarındaki gerilim: V = I · R = 4 · 2.5 = <strong>10 V</strong></li><ul class="dag"><li>Bu paralel grubun her kolunda aynı <strong>10 V</strong> vardır:</li><ul class="dag"><li><strong>R7</strong>: I = V / R = 10 / 10 = <strong>1 mA</strong>  (gerilimi 10 V)</li><li><strong>R8</strong>: I = V / R = 10 / 10 = <strong>1 mA</strong>  (gerilimi 10 V)</li><li><strong>R9</strong>: I = V / R = 10 / 5 = <strong>2 mA</strong>  (gerilimi 10 V)</li></ul></ul></ul><h3>5. Özet tablo</h3><table class="ozet"><thead><tr><th>Direnç</th><th class="n">R (kΩ)</th><th class="n">V (V)</th><th class="n">I (mA)</th><th class="n">P = V·I (mW)</th></tr></thead><tbody><tr><th>R1</th><td class="n">3</td><td class="n">12</td><td class="n">4</td><td class="n">48</td></tr><tr><th>R2</th><td class="n">5</td><td class="n">10</td><td class="n">2</td><td class="n">20</td></tr><tr><th>R3</th><td class="n">4</td><td class="n">4</td><td class="n">1</td><td class="n">4</td></tr><tr><th>R4</th><td class="n">4</td><td class="n">4</td><td class="n">1</td><td class="n">4</td></tr><tr><th>R5</th><td class="n">7</td><td class="n">14</td><td class="n">2</td><td class="n">28</td></tr><tr><th>R6</th><td class="n">6</td><td class="n">24</td><td class="n">4</td><td class="n">96</td></tr><tr><th>R7</th><td class="n">10</td><td class="n">10</td><td class="n">1</td><td class="n">10</td></tr><tr><th>R8</th><td class="n">10</td><td class="n">10</td><td class="n">1</td><td class="n">10</td></tr><tr><th>R9</th><td class="n">5</td><td class="n">10</td><td class="n">2</td><td class="n">20</td></tr><tr><th>Toplam</th><td class="n">R_eş = 15</td><td class="n">60</td><td class="n">4</td><td class="n">240</td></tr></tbody></table><h3>6. Kontroller</h3><div class="kontrol"><h4>KVL — gerilim düşümleri toplamı</h4><ul><li>V(R1) + V(RB) + V(R6) + V(R789) = 12 + 14 + 24 + 10 = <strong>60 V</strong> = kaynak gerilimi 60 V ✔</li><li>V(R2) + V(R34) = 10 + 4 = <strong>14 V</strong> = kolun gerilimi 14 V ✔</li></ul></div><div class="kontrol"><h4>KCL — düğüm akımları toplamı</h4><ul><li>RB düğümü: I(RA) + I(R5) = 2 + 2 = <strong>4 mA</strong> = gruba giren akım 4 mA ✔</li><li>R34 düğümü: I(R3) + I(R4) = 1 + 1 = <strong>2 mA</strong> = gruba giren akım 2 mA ✔</li><li>R789 düğümü: I(R7) + I(R8) + I(R9) = 1 + 1 + 2 = <strong>4 mA</strong> = gruba giren akım 4 mA ✔</li></ul></div><div class="kontrol"><h4>Güç dengesi</h4><ul><li>Dirençlerin güçleri toplamı: <strong>240 mW</strong></li><li>Kaynağın verdiği güç: 60 · 4 = <strong>240 mW</strong></li><li>İkisi eşit ✔ — enerji korunumu sağlanıyor</li></ul></div><h3>7. Simülatörde beklenen değerler</h3><p class="topo">EveryCircuit / Proto gibi bir uygulamada devreyi kurunca ölçtüğünüz değerler bunlarla birebir aynı çıkmalı.</p><table><thead><tr><th>Ölçülecek</th><th class="n">Beklenen</th></tr></thead><tbody><tr><th>Eşdeğer direnç</th><td class="n">15 kΩ</td></tr><tr><th>Toplam akım</th><td class="n">4 mA</td></tr><tr><th>R1 → V / I</th><td class="n">12 V / 4 mA</td></tr><tr><th>R2 → V / I</th><td class="n">10 V / 2 mA</td></tr><tr><th>R3 → V / I</th><td class="n">4 V / 1 mA</td></tr><tr><th>R4 → V / I</th><td class="n">4 V / 1 mA</td></tr><tr><th>R5 → V / I</th><td class="n">14 V / 2 mA</td></tr><tr><th>R6 → V / I</th><td class="n">24 V / 4 mA</td></tr><tr><th>R7 → V / I</th><td class="n">10 V / 1 mA</td></tr><tr><th>R8 → V / I</th><td class="n">10 V / 1 mA</td></tr><tr><th>R9 → V / I</th><td class="n">10 V / 2 mA</td></tr></tbody></table><div class="yt"><span>YouTube video başlığı</span><b>9 Dirençli Seri-Paralel DC Devre Çözümü by ______________</b></div></div></section>
+<section id="s8"><div class="sh"><span class="badge">Seviye 8</span><h2>10 Dirençli Seri-Paralel DC Devre</h2><p class="topo">Serbest konfigürasyon, üç paralel bölge. Sırayla: <strong>R1</strong> seri → <strong>R2 ∥ R3</strong> → ikinci paralel grup (<strong>R4+R5 seri kolu</strong> ile <strong>R6+R7 seri kolu</strong> paralel) → <strong>R8</strong> seri → <strong>R9 ∥ R10</strong>.</p></div><div class="section-inner"><figure><figcaption>Devre şeması</figcaption><div class="sema"><svg class="devre" viewBox="0 0 1050 284" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seviye 8 devre şeması"><line class="w" x1="124.0" y1="126.0" x2="163.0" y2="126.0"/><line class="w" x1="231.0" y1="126.0" x2="270.0" y2="126.0"/><rect class="rbox" x="163.0" y="113.0" width="68" height="26" rx="3"/><text class="rname" x="197.0" y="130.5">R1</text><text class="rval" x="197.0" y="105.0">2 kΩ</text><line class="w" x1="270.0" y1="126.0" x2="300.0" y2="126.0"/><line class="w" x1="386.0" y1="126.0" x2="416.0" y2="126.0"/><line class="w" x1="300.0" y1="83.0" x2="309.0" y2="83.0"/><line class="w" x1="377.0" y1="83.0" x2="386.0" y2="83.0"/><rect class="rbox" x="309.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="87.5">R2</text><text class="rval" x="343.0" y="62.0">10 kΩ</text><line class="w" x1="300.0" y1="169.0" x2="309.0" y2="169.0"/><line class="w" x1="377.0" y1="169.0" x2="386.0" y2="169.0"/><rect class="rbox" x="309.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="173.5">R3</text><text class="rval" x="343.0" y="148.0">10 kΩ</text><line class="w" x1="300.0" y1="83.0" x2="300.0" y2="169.0"/><line class="w" x1="386.0" y1="83.0" x2="386.0" y2="169.0"/><circle class="node" cx="300.0" cy="83.0" r="3.4"/><circle class="node" cx="386.0" cy="83.0" r="3.4"/><circle class="node" cx="300.0" cy="169.0" r="3.4"/><circle class="node" cx="386.0" cy="169.0" r="3.4"/><line class="w" x1="416.0" y1="126.0" x2="446.0" y2="126.0"/><line class="w" x1="678.0" y1="126.0" x2="708.0" y2="126.0"/><line class="w" x1="446.0" y1="83.0" x2="470.0" y2="83.0"/><line class="w" x1="538.0" y1="83.0" x2="562.0" y2="83.0"/><rect class="rbox" x="470.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="504.0" y="87.5">R4</text><text class="rval" x="504.0" y="62.0">3 kΩ</text><line class="w" x1="562.0" y1="83.0" x2="586.0" y2="83.0"/><line class="w" x1="654.0" y1="83.0" x2="678.0" y2="83.0"/><rect class="rbox" x="586.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="620.0" y="87.5">R5</text><text class="rval" x="620.0" y="62.0">4 kΩ</text><line class="w" x1="446.0" y1="169.0" x2="470.0" y2="169.0"/><line class="w" x1="538.0" y1="169.0" x2="562.0" y2="169.0"/><rect class="rbox" x="470.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="504.0" y="173.5">R6</text><text class="rval" x="504.0" y="148.0">1 kΩ</text><line class="w" x1="562.0" y1="169.0" x2="586.0" y2="169.0"/><line class="w" x1="654.0" y1="169.0" x2="678.0" y2="169.0"/><rect class="rbox" x="586.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="620.0" y="173.5">R7</text><text class="rval" x="620.0" y="148.0">6 kΩ</text><line class="w" x1="446.0" y1="83.0" x2="446.0" y2="169.0"/><line class="w" x1="678.0" y1="83.0" x2="678.0" y2="169.0"/><circle class="node" cx="446.0" cy="83.0" r="3.4"/><circle class="node" cx="678.0" cy="83.0" r="3.4"/><circle class="node" cx="446.0" cy="169.0" r="3.4"/><circle class="node" cx="678.0" cy="169.0" r="3.4"/><line class="w" x1="708.0" y1="126.0" x2="747.0" y2="126.0"/><line class="w" x1="815.0" y1="126.0" x2="854.0" y2="126.0"/><rect class="rbox" x="747.0" y="113.0" width="68" height="26" rx="3"/><text class="rname" x="781.0" y="130.5">R8</text><text class="rval" x="781.0" y="105.0">1 kΩ</text><line class="w" x1="854.0" y1="126.0" x2="884.0" y2="126.0"/><line class="w" x1="970.0" y1="126.0" x2="1000.0" y2="126.0"/><line class="w" x1="884.0" y1="83.0" x2="893.0" y2="83.0"/><line class="w" x1="961.0" y1="83.0" x2="970.0" y2="83.0"/><rect class="rbox" x="893.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="927.0" y="87.5">R9</text><text class="rval" x="927.0" y="62.0">5 kΩ</text><line class="w" x1="884.0" y1="169.0" x2="893.0" y2="169.0"/><line class="w" x1="961.0" y1="169.0" x2="970.0" y2="169.0"/><rect class="rbox" x="893.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="927.0" y="173.5">R10</text><text class="rval" x="927.0" y="148.0">5 kΩ</text><line class="w" x1="884.0" y1="83.0" x2="884.0" y2="169.0"/><line class="w" x1="970.0" y1="83.0" x2="970.0" y2="169.0"/><circle class="node" cx="884.0" cy="83.0" r="3.4"/><circle class="node" cx="970.0" cy="83.0" r="3.4"/><circle class="node" cx="884.0" cy="169.0" r="3.4"/><circle class="node" cx="970.0" cy="169.0" r="3.4"/><polyline class="w" points="60.0,174.0 60.0,126.0 124.0,126.0"/><polyline class="w" points="1000.0,126.0 1020.0,126.0 1020.0,254.0 60.0,254.0 60.0,206.0"/><line class="bat" x1="42.0" y1="181.0" x2="78.0" y2="181.0"/><line class="bat" x1="52.0" y1="187.0" x2="68.0" y2="187.0"/><line class="bat" x1="42.0" y1="193.0" x2="78.0" y2="193.0"/><line class="bat" x1="52.0" y1="199.0" x2="68.0" y2="199.0"/><text class="pm" x="32.0" y="185.0">+</text><text class="pm" x="32.0" y="206.0">−</text><text class="src" x="86.0" y="194.0">56 V</text></svg></div></figure><figcaption>Verilen değerler</figcaption><div class="verilen"><div class="vk kaynak"><span>KAYNAK V</span><b>56 V</b></div><div class="vk"><span>R1</span><b>2 kΩ</b></div><div class="vk"><span>R2</span><b>10 kΩ</b></div><div class="vk"><span>R3</span><b>10 kΩ</b></div><div class="vk"><span>R4</span><b>3 kΩ</b></div><div class="vk"><span>R5</span><b>4 kΩ</b></div><div class="vk"><span>R6</span><b>1 kΩ</b></div><div class="vk"><span>R7</span><b>6 kΩ</b></div><div class="vk"><span>R8</span><b>1 kΩ</b></div><div class="vk"><span>R9</span><b>5 kΩ</b></div><div class="vk"><span>R10</span><b>5 kΩ</b></div></div><div class="not"><b>Birim kuralı:</b> kΩ ve V kullanıldığı için V ÷ kΩ doğrudan <b>mA</b>, V × mA ise <b>mW</b> verir.</div><h3>1. Eşdeğer direnç — adım adım</h3><p class="topo">En içteki paralel gruptan başlanır, tek dirence indirgenir, sonra dışa doğru ilerlenir. Seri olanlar en sonda toplanır.</p><div class="adim"><span class="no">Adım 1</span><p class="form"><strong>R23 = (R2 · R3) / (R2 + R3)</strong>  (iki direnç paralel → çarpım/toplam)</p><ul class="hesap"><li>Çarpım: 10 · 10 = 100</li><li>Toplam: 10 + 10 = 20</li><li>R23 = 100 / 20 = <strong>5 kΩ</strong></li></ul></div><div class="adim"><span class="no">Adım 2</span><p class="form"><strong>R45 = R4 + R5</strong>  (seri bağlı, doğrudan toplanır)</p><p class="form">R45 = 3 + 4 = <strong>7 kΩ</strong></p></div><div class="adim"><span class="no">Adım 3</span><p class="form"><strong>R67 = R6 + R7</strong>  (seri bağlı, doğrudan toplanır)</p><p class="form">R67 = 1 + 6 = <strong>7 kΩ</strong></p></div><div class="adim"><span class="no">Adım 4</span><p class="form"><strong>RA = (R45 · R67) / (R45 + R67)</strong>  (iki direnç paralel → çarpım/toplam)</p><ul class="hesap"><li>Çarpım: 7 · 7 = 49</li><li>Toplam: 7 + 7 = 14</li><li>RA = 49 / 14 = <strong>3.5 kΩ</strong></li></ul></div><div class="adim"><span class="no">Adım 5</span><p class="form"><strong>R910 = (R9 · R10) / (R9 + R10)</strong>  (iki direnç paralel → çarpım/toplam)</p><ul class="hesap"><li>Çarpım: 5 · 5 = 25</li><li>Toplam: 5 + 5 = 10</li><li>R910 = 25 / 10 = <strong>2.5 kΩ</strong></li></ul></div><div class="adim"><span class="no">Adım 6</span><p class="form"><strong>R_eş = R1 + R23 + RA + R8 + R910</strong>  (seri bağlı, doğrudan toplanır)</p><p class="form">R_eş = 2 + 5 + 3.5 + 1 + 2.5 = <strong>14 kΩ</strong></p></div><div class="sonuc">Eşdeğer direnç: <b>R_eş = 14 kΩ</b></div><h3>2. Toplam akım</h3><div class="sonuc">I_toplam = V ÷ R_eş = 56 ÷ 14 = <b>4 mA</b></div><h3>3. Çözülmüş devre</h3><figure><figcaption>Her direncin üzerindeki gerilim (<span style="color:var(--v)">turuncu</span>) ve akımı (<span style="color:var(--i)">yeşil</span>)</figcaption><div class="sema"><svg class="devre" viewBox="0 0 1050 284" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seviye 8 çözüm şeması"><line class="w" x1="124.0" y1="126.0" x2="163.0" y2="126.0"/><line class="w" x1="231.0" y1="126.0" x2="270.0" y2="126.0"/><rect class="rbox" x="163.0" y="113.0" width="68" height="26" rx="3"/><text class="rname" x="197.0" y="130.5">R1</text><text class="rval" x="197.0" y="105.0">2 kΩ</text><text class="rvi" x="197.0" y="155.0"><tspan class="tv">8 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">4 mA</tspan></text><line class="w" x1="270.0" y1="126.0" x2="300.0" y2="126.0"/><line class="w" x1="386.0" y1="126.0" x2="416.0" y2="126.0"/><line class="w" x1="300.0" y1="83.0" x2="309.0" y2="83.0"/><line class="w" x1="377.0" y1="83.0" x2="386.0" y2="83.0"/><rect class="rbox" x="309.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="87.5">R2</text><text class="rval" x="343.0" y="62.0">10 kΩ</text><text class="rvi" x="343.0" y="112.0"><tspan class="tv">20 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="300.0" y1="169.0" x2="309.0" y2="169.0"/><line class="w" x1="377.0" y1="169.0" x2="386.0" y2="169.0"/><rect class="rbox" x="309.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="343.0" y="173.5">R3</text><text class="rval" x="343.0" y="148.0">10 kΩ</text><text class="rvi" x="343.0" y="198.0"><tspan class="tv">20 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="300.0" y1="83.0" x2="300.0" y2="169.0"/><line class="w" x1="386.0" y1="83.0" x2="386.0" y2="169.0"/><circle class="node" cx="300.0" cy="83.0" r="3.4"/><circle class="node" cx="386.0" cy="83.0" r="3.4"/><circle class="node" cx="300.0" cy="169.0" r="3.4"/><circle class="node" cx="386.0" cy="169.0" r="3.4"/><line class="w" x1="416.0" y1="126.0" x2="446.0" y2="126.0"/><line class="w" x1="678.0" y1="126.0" x2="708.0" y2="126.0"/><line class="w" x1="446.0" y1="83.0" x2="470.0" y2="83.0"/><line class="w" x1="538.0" y1="83.0" x2="562.0" y2="83.0"/><rect class="rbox" x="470.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="504.0" y="87.5">R4</text><text class="rval" x="504.0" y="62.0">3 kΩ</text><text class="rvi" x="504.0" y="112.0"><tspan class="tv">6 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="562.0" y1="83.0" x2="586.0" y2="83.0"/><line class="w" x1="654.0" y1="83.0" x2="678.0" y2="83.0"/><rect class="rbox" x="586.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="620.0" y="87.5">R5</text><text class="rval" x="620.0" y="62.0">4 kΩ</text><text class="rvi" x="620.0" y="112.0"><tspan class="tv">8 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="446.0" y1="169.0" x2="470.0" y2="169.0"/><line class="w" x1="538.0" y1="169.0" x2="562.0" y2="169.0"/><rect class="rbox" x="470.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="504.0" y="173.5">R6</text><text class="rval" x="504.0" y="148.0">1 kΩ</text><text class="rvi" x="504.0" y="198.0"><tspan class="tv">2 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="562.0" y1="169.0" x2="586.0" y2="169.0"/><line class="w" x1="654.0" y1="169.0" x2="678.0" y2="169.0"/><rect class="rbox" x="586.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="620.0" y="173.5">R7</text><text class="rval" x="620.0" y="148.0">6 kΩ</text><text class="rvi" x="620.0" y="198.0"><tspan class="tv">12 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="446.0" y1="83.0" x2="446.0" y2="169.0"/><line class="w" x1="678.0" y1="83.0" x2="678.0" y2="169.0"/><circle class="node" cx="446.0" cy="83.0" r="3.4"/><circle class="node" cx="678.0" cy="83.0" r="3.4"/><circle class="node" cx="446.0" cy="169.0" r="3.4"/><circle class="node" cx="678.0" cy="169.0" r="3.4"/><line class="w" x1="708.0" y1="126.0" x2="747.0" y2="126.0"/><line class="w" x1="815.0" y1="126.0" x2="854.0" y2="126.0"/><rect class="rbox" x="747.0" y="113.0" width="68" height="26" rx="3"/><text class="rname" x="781.0" y="130.5">R8</text><text class="rval" x="781.0" y="105.0">1 kΩ</text><text class="rvi" x="781.0" y="155.0"><tspan class="tv">4 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">4 mA</tspan></text><line class="w" x1="854.0" y1="126.0" x2="884.0" y2="126.0"/><line class="w" x1="970.0" y1="126.0" x2="1000.0" y2="126.0"/><line class="w" x1="884.0" y1="83.0" x2="893.0" y2="83.0"/><line class="w" x1="961.0" y1="83.0" x2="970.0" y2="83.0"/><rect class="rbox" x="893.0" y="70.0" width="68" height="26" rx="3"/><text class="rname" x="927.0" y="87.5">R9</text><text class="rval" x="927.0" y="62.0">5 kΩ</text><text class="rvi" x="927.0" y="112.0"><tspan class="tv">10 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="884.0" y1="169.0" x2="893.0" y2="169.0"/><line class="w" x1="961.0" y1="169.0" x2="970.0" y2="169.0"/><rect class="rbox" x="893.0" y="156.0" width="68" height="26" rx="3"/><text class="rname" x="927.0" y="173.5">R10</text><text class="rval" x="927.0" y="148.0">5 kΩ</text><text class="rvi" x="927.0" y="198.0"><tspan class="tv">10 V</tspan><tspan class="tsep"> · </tspan><tspan class="ti">2 mA</tspan></text><line class="w" x1="884.0" y1="83.0" x2="884.0" y2="169.0"/><line class="w" x1="970.0" y1="83.0" x2="970.0" y2="169.0"/><circle class="node" cx="884.0" cy="83.0" r="3.4"/><circle class="node" cx="970.0" cy="83.0" r="3.4"/><circle class="node" cx="884.0" cy="169.0" r="3.4"/><circle class="node" cx="970.0" cy="169.0" r="3.4"/><polyline class="w" points="60.0,174.0 60.0,126.0 124.0,126.0"/><polyline class="w" points="1000.0,126.0 1020.0,126.0 1020.0,254.0 60.0,254.0 60.0,206.0"/><line class="bat" x1="42.0" y1="181.0" x2="78.0" y2="181.0"/><line class="bat" x1="52.0" y1="187.0" x2="68.0" y2="187.0"/><line class="bat" x1="42.0" y1="193.0" x2="78.0" y2="193.0"/><line class="bat" x1="52.0" y1="199.0" x2="68.0" y2="199.0"/><text class="pm" x="32.0" y="185.0">+</text><text class="pm" x="32.0" y="206.0">−</text><text class="src" x="86.0" y="194.0">56 V</text></svg></div></figure><h3>4. Gerilim ve akım dağılımı</h3><p class="topo">Seri bağlı elemanlardan aynı akım geçer; paralel kolların uçlarındaki gerilim aynıdır.</p><ul class="dag"><li><strong>R1</strong> üzerinden 4 mA geçer → V_1 = I · R = 4 · 2 = <strong>8 V</strong></li><li><strong>R23</strong> grubunun uçlarındaki gerilim: V = I · R = 4 · 5 = <strong>20 V</strong></li><ul class="dag"><li>Bu paralel grubun her kolunda aynı <strong>20 V</strong> vardır:</li><ul class="dag"><li><strong>R2</strong>: I = V / R = 20 / 10 = <strong>2 mA</strong>  (gerilimi 20 V)</li><li><strong>R3</strong>: I = V / R = 20 / 10 = <strong>2 mA</strong>  (gerilimi 20 V)</li></ul></ul><li><strong>RA</strong> grubunun uçlarındaki gerilim: V = I · R = 4 · 3.5 = <strong>14 V</strong></li><ul class="dag"><li>Bu paralel grubun her kolunda aynı <strong>14 V</strong> vardır:</li><ul class="dag"><li><strong>R45</strong> kolu: I = V / R = 14 / 7 = <strong>2 mA</strong></li><ul class="dag"><li><strong>R4</strong> üzerinden 2 mA geçer → V_4 = I · R = 2 · 3 = <strong>6 V</strong></li><li><strong>R5</strong> üzerinden 2 mA geçer → V_5 = I · R = 2 · 4 = <strong>8 V</strong></li></ul><li><strong>R67</strong> kolu: I = V / R = 14 / 7 = <strong>2 mA</strong></li><ul class="dag"><li><strong>R6</strong> üzerinden 2 mA geçer → V_6 = I · R = 2 · 1 = <strong>2 V</strong></li><li><strong>R7</strong> üzerinden 2 mA geçer → V_7 = I · R = 2 · 6 = <strong>12 V</strong></li></ul></ul></ul><li><strong>R8</strong> üzerinden 4 mA geçer → V_8 = I · R = 4 · 1 = <strong>4 V</strong></li><li><strong>R910</strong> grubunun uçlarındaki gerilim: V = I · R = 4 · 2.5 = <strong>10 V</strong></li><ul class="dag"><li>Bu paralel grubun her kolunda aynı <strong>10 V</strong> vardır:</li><ul class="dag"><li><strong>R9</strong>: I = V / R = 10 / 5 = <strong>2 mA</strong>  (gerilimi 10 V)</li><li><strong>R10</strong>: I = V / R = 10 / 5 = <strong>2 mA</strong>  (gerilimi 10 V)</li></ul></ul></ul><h3>5. Özet tablo</h3><table class="ozet"><thead><tr><th>Direnç</th><th class="n">R (kΩ)</th><th class="n">V (V)</th><th class="n">I (mA)</th><th class="n">P = V·I (mW)</th></tr></thead><tbody><tr><th>R1</th><td class="n">2</td><td class="n">8</td><td class="n">4</td><td class="n">32</td></tr><tr><th>R2</th><td class="n">10</td><td class="n">20</td><td class="n">2</td><td class="n">40</td></tr><tr><th>R3</th><td class="n">10</td><td class="n">20</td><td class="n">2</td><td class="n">40</td></tr><tr><th>R4</th><td class="n">3</td><td class="n">6</td><td class="n">2</td><td class="n">12</td></tr><tr><th>R5</th><td class="n">4</td><td class="n">8</td><td class="n">2</td><td class="n">16</td></tr><tr><th>R6</th><td class="n">1</td><td class="n">2</td><td class="n">2</td><td class="n">4</td></tr><tr><th>R7</th><td class="n">6</td><td class="n">12</td><td class="n">2</td><td class="n">24</td></tr><tr><th>R8</th><td class="n">1</td><td class="n">4</td><td class="n">4</td><td class="n">16</td></tr><tr><th>R9</th><td class="n">5</td><td class="n">10</td><td class="n">2</td><td class="n">20</td></tr><tr><th>R10</th><td class="n">5</td><td class="n">10</td><td class="n">2</td><td class="n">20</td></tr><tr><th>Toplam</th><td class="n">R_eş = 14</td><td class="n">56</td><td class="n">4</td><td class="n">224</td></tr></tbody></table><h3>6. Kontroller</h3><div class="kontrol"><h4>KVL — gerilim düşümleri toplamı</h4><ul><li>V(R1) + V(R23) + V(RA) + V(R8) + V(R910) = 8 + 20 + 14 + 4 + 10 = <strong>56 V</strong> = kaynak gerilimi 56 V ✔</li><li>V(R4) + V(R5) = 6 + 8 = <strong>14 V</strong> = kolun gerilimi 14 V ✔</li><li>V(R6) + V(R7) = 2 + 12 = <strong>14 V</strong> = kolun gerilimi 14 V ✔</li></ul></div><div class="kontrol"><h4>KCL — düğüm akımları toplamı</h4><ul><li>R23 düğümü: I(R2) + I(R3) = 2 + 2 = <strong>4 mA</strong> = gruba giren akım 4 mA ✔</li><li>RA düğümü: I(R45) + I(R67) = 2 + 2 = <strong>4 mA</strong> = gruba giren akım 4 mA ✔</li><li>R910 düğümü: I(R9) + I(R10) = 2 + 2 = <strong>4 mA</strong> = gruba giren akım 4 mA ✔</li></ul></div><div class="kontrol"><h4>Güç dengesi</h4><ul><li>Dirençlerin güçleri toplamı: <strong>224 mW</strong></li><li>Kaynağın verdiği güç: 56 · 4 = <strong>224 mW</strong></li><li>İkisi eşit ✔ — enerji korunumu sağlanıyor</li></ul></div><h3>7. Simülatörde beklenen değerler</h3><p class="topo">EveryCircuit / Proto gibi bir uygulamada devreyi kurunca ölçtüğünüz değerler bunlarla birebir aynı çıkmalı.</p><table><thead><tr><th>Ölçülecek</th><th class="n">Beklenen</th></tr></thead><tbody><tr><th>Eşdeğer direnç</th><td class="n">14 kΩ</td></tr><tr><th>Toplam akım</th><td class="n">4 mA</td></tr><tr><th>R1 → V / I</th><td class="n">8 V / 4 mA</td></tr><tr><th>R2 → V / I</th><td class="n">20 V / 2 mA</td></tr><tr><th>R3 → V / I</th><td class="n">20 V / 2 mA</td></tr><tr><th>R4 → V / I</th><td class="n">6 V / 2 mA</td></tr><tr><th>R5 → V / I</th><td class="n">8 V / 2 mA</td></tr><tr><th>R6 → V / I</th><td class="n">2 V / 2 mA</td></tr><tr><th>R7 → V / I</th><td class="n">12 V / 2 mA</td></tr><tr><th>R8 → V / I</th><td class="n">4 V / 4 mA</td></tr><tr><th>R9 → V / I</th><td class="n">10 V / 2 mA</td></tr><tr><th>R10 → V / I</th><td class="n">10 V / 2 mA</td></tr></tbody></table><div class="yt"><span>YouTube video başlığı</span><b>10 Dirençli Seri-Paralel DC Devre Çözümü by ______________</b></div></div></section>
+
+<footer>⚡ Dirençler kΩ · gerilimler V · akımlar mA · güçler mW ⚡</footer>
+</div>
+
+<script>
+// Scroll progress bar
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+  document.getElementById('scrollProgress').style.width = pct + '%';
+});
+
+// Scroll reveal animation
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('section, .bento-card').forEach(el => {
+  el.classList.add('reveal');
+  observer.observe(el);
+});
+
+// Active nav link on scroll
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('nav a');
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    const top = s.offsetTop - 120;
+    if (scrollY >= top) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.classList.remove('active');
+    if (a.getAttribute('href') === '#' + current) {
+      a.classList.add('active');
+    }
+  });
+});
+
+// Hover sound effect simulation via subtle scale
+document.querySelectorAll('.vk, .adim, .kontrol').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    el.style.transition = 'all .15s cubic-bezier(.16,1,.3,1)';
+  });
+});
+</script>
+</body>
+</html>
